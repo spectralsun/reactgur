@@ -3,6 +3,10 @@ from flask.ext.assets import Environment, Bundle
 
 
 app = Flask(__name__)
+try:
+    app.config.from_object('config')
+except: 
+    app.config.from_object('configdist')
 
 assets = Environment(app)
 
