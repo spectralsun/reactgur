@@ -1,0 +1,16 @@
+{% extends 'modal.html' %}
+
+{% block modal_title %}Upload Media{% endblock %}
+
+{% block modal_id %}upload{% endblock %}
+
+{% block modal_body %}
+    <span class="btn btn-success fileinput-button">
+        <i class="glyphicon glyphicon-plus"></i>
+        <span>Select files...</span>
+        <!-- The file input field used as target for the file upload widget -->
+        <input id="modal_upload_input" type="file" name="files[]" multiple>
+    </span>
+{% endblock %}
+
+{% block right_button %}{% endblock %}
