@@ -1,10 +1,14 @@
 import os
-import magic
 import random
 
-from flask import Flask, render_template, request, session
+import bleach
+import magic
+import simplejson as json
+from flask import Flask, render_template, request, session, \
+    send_from_directory
 from flask.json import dumps
 from flask.ext.assets import Environment, Bundle
+from PIL import Image, ImageOps, ImageChops
 from werkzeug import secure_filename
 
 from reactgur.models import Media
@@ -45,28 +49,46 @@ assets.register('jsx', jsx)
 
 css = Bundle('lib/bootstrap/css/bootstrap-theme.min.css',
              'lib/bootstrap/css/bootstrap.min.css',
+             'lib/lightbox/lightbox.css',
              'lib/fileupload/jquery.fileupload.css',
              'main.css')
 assets.register('css', css)
 
-_image_mimes = ['image/jpeg', 'image/png', 'image/gif', 'image/x-ms-bmp']
+_thumbnail_size = app.config['THUMBNAIL_SIZE']
+_image_mimes = app.config['IMAGE_ACCEPT_MIMES']
+_image_extensions = {
+    'image/jpeg': '.jpg',
+    'image/png': '.png',
+    'image/gif': '.gif',
+    'image/x-ms-bmp': '.bmp'
+}
+_upload_path = app.config['UPLOAD_PATH']
 
 def jsonify(*args, **kwargs):
     """Improved json response factory"""
     indent = None
     data = args[0] if args else dict(kwargs)
    
-    if current_app.config['JSONIFY_PRETTYPRINT_REGULAR'] \
+    if app.config['JSONIFY_PRETTYPRINT_REGULAR'] \
        and not request.is_xhr:
         indent = 2
-    return current_app.response_class(dumps(data,
+    return app.response_class(dumps(data,
         indent=indent),
         mimetype='application/json')
 
-def _generate_filename(length=16):
-    """Generates a unique file name containing a-z A-Z 0-9"""
+def _random_string(length=16):
+    """Generates a random string containing a-z A-Z 0-9"""
     pool = range(48, 57) + range(65, 90) + range(97, 122)
     return ''.join(chr(random.choice(pool)) for _ in range(length))
+
+def _generate_filename(basepath, extension):
+    """Generate an unused filename"""
+    exists = True
+    while exists:
+        filename = secure_filename(_random_string() + extension)
+        path = basepath + filename
+        exists = os.path.exists(path)
+    return filename
 
 def _handle_upload(files):
     if not files:
@@ -88,31 +110,58 @@ def _handle_upload(files):
             name = upload.filename
         else:
             name, upload.ext = upload.filename.rsplit('.', 1)
-        
+        name = bleach.clean(name);
+
         # Save the image to a secure random filename
-        exists = True
-        while exists:
-            path = secure_filename(_generate_filename() + '.jpg')
-            filepath = app.config['UPLOAD_PATH'] + path
-            exists = os.path.exists(filepath)
+        filename = _generate_filename(_upload_path, _image_extensions[mime])
+        filepath = _upload_path + filename
         upload.save(filepath)
 
         # Get image details
         im = Image.open(filepath)
-        # Convert image to jpeg if not jpeg or png
-        if mime != 'image/jpeg' and mime != 'image/png':
-            im.convert('RGB').save(filepath, 'JPEG')
+        # Convert image to jpeg if bmp
+        if mime != 'image/x-ms-bmp':
+            filename = _generate_filename(_upload_path, 
+                _image_extensions[mime])
+            newpath = _upload_path + filename
+            im.convert('RGB').save(newpath, 'JPEG')
+            im = Image.open(newpath)
+            os.remove(filepath)
+
+        # Create thumbnail
+        thumbname = _generate_filename(_upload_path, '.jpg')
+        thumb = ImageOps.fit(im, _thumbnail_size, Image.ANTIALIAS, (0.5, 0.5))
+        if thumb.size[1] < _thumbnail_size[1]:
+            thumb = im.crop((0, 0, _thumbnail_size[0], _thumbnail_size[1]))
+
+            offset_x = max((_thumbnail_size[0] - im.size[0]) / 2, 0)
+            offset_y = max((_thumbnail_size[1] - im.size[1]) / 2, 0)
+
+            thumb = ImageChops.offset(thumb, offset_x, offset_y)
+        thumb.convert('RGB').save(_upload_path + thumbname)
+        thumbnail = Media(filename=thumbname,
+                          width=_thumbnail_size[0],
+                          height=_thumbnail_size[1])
 
         # Save the media instance 
-        media = Media(name=name, path=path, width=im.size[0], height=im.size[1])
+        media = Media(filename=filename, 
+                      name=name, 
+                      width=im.size[0], 
+                      height=im.size[1],
+                      thumbnail=thumbnail)
         media.save()
         uploaded.append(media)
     return uploaded
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', images=dumps(Media.get_latest()))
 
 @app.route('/upload', methods=['POST'])
 def upload():
     return jsonify(_handle_upload(request.files))
+
+@app.route('/<path:filename>')
+def catch_all(filename):
+    return send_from_directory(app.config['UPLOAD_PATH'], filename, 
+        as_attachment=True)
