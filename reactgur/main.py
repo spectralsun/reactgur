@@ -10,7 +10,15 @@ from werkzeug import secure_filename
 from reactgur.models import Media
 
 
+class ExtensibleJSONEncoder(json.JSONEncoder):
+    """A JSON encoder that returns the to_json method if present"""
+    def default(self, obj):
+        if hasattr(obj, 'to_json'):
+            return obj.to_json()
+        return super(ExtensibleJSONEncoder, self).default(obj)
+
 app = Flask(__name__)
+app.json_encoder = ExtensibleJSONEncoder
 try:
     app.config.from_object('config')
 except: 
