@@ -2,9 +2,9 @@
 var MediaItem = React.createClass({
     render: function() {
         return (
-            <a class="image" data-gallery="multiimages" data-toggle="lightbox"
-                data-title={this.props.image.name} href={this.props.image.path}>
-                <img src={this.props.image.path} />
+            <a className="image" data-gallery="multiimages" data-toggle="lightbox"
+                data-title={this.props.image.name} href={this.props.image.href}>
+                <img src={this.props.image.thumbnail.href} />
             </a>
         )
     }
