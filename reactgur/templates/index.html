@@ -39,6 +39,9 @@
 
     </div><!-- /.container -->
     {% include 'modals/upload.html' %}
+    <script type="text/javascript">
+      var IMAGES = {{ images|safe }}
+    </script>
     {% assets 'js' %}
     <script src="{{ ASSET_URL }}" type="text/javascript"></script>
     {% endassets %}
