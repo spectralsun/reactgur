@@ -1,3 +1,19 @@
 #main {
     margin-top: 71px;
 }
+
+a.image {
+    height: 90px;
+    width: 90px;
+    text-align: center;
+    display: inline-block;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    overflow: hidden;
+    margin: 0 0 13px 13px;
+    float: left;
+}
+
+a.image:hover {
+    border: 1px solid #999;
+}
