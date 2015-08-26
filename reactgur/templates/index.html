@@ -10,43 +10,16 @@
     <title>Reactgur</title>
 
     {% assets 'css' %}
-        <link href="{{ ASSET_URL }}" rel="stylesheet">
+    <link href="{{ ASSET_URL }}" rel="stylesheet">
     {% endassets %}
   </head>
 
   <body>
-
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="navbar-brand" href="#">Reactgur</a>
-        </div>
-        <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li><a href="#" data-toggle="modal" data-target="#modal_upload">Upload</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
-      </div>
-    </nav>
-
-    <div id="main" class="container">
-
-    </div><!-- /.container -->
+    <div id="entry"></div>
     {% include 'modals/upload.html' %}
     <script type="text/javascript">
       var IMAGES = {{ images|safe }}
     </script>
-    {% assets 'js' %}
-    <script src="{{ ASSET_URL }}" type="text/javascript"></script>
-    {% endassets %}
-    {% assets 'jsx' %}
-    <script src="{{ ASSET_URL }}" type="text/jsx"></script>
-    {% endassets %}
+    <script type="text/javascript" src="/static/bundle.js"></script>
   </body>
 </html>
