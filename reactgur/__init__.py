@@ -3,24 +3,15 @@ import random
 
 import bleach
 import magic
-import simplejson as json
 from flask import Flask, render_template, request, session, \
     send_from_directory
-from flask.json import dumps
 from flask.ext.assets import Environment, Bundle
 from PIL import Image, ImageOps, ImageChops
-from werkzeug import secure_filename
 
 from reactgur.blueprints import user
 from reactgur.models import Media
+from reactgur.util import ExtensibleJSONEncoder, jsonify, generate_filename
 
-
-class ExtensibleJSONEncoder(json.JSONEncoder):
-    """A JSON encoder that returns the to_json method if present"""
-    def default(self, obj):
-        if hasattr(obj, 'to_json'):
-            return obj.to_json()
-        return super(ExtensibleJSONEncoder, self).default(obj)
 
 app = Flask(__name__)
 app.json_encoder = ExtensibleJSONEncoder
@@ -48,40 +39,19 @@ _image_extensions = {
 }
 _upload_path = app.config['UPLOAD_PATH']
 
-def jsonify(*args, **kwargs):
-    """Improved json response factory"""
-    indent = None
-    data = args[0] if args else dict(kwargs)
-   
-    if app.config['JSONIFY_PRETTYPRINT_REGULAR'] \
-       and not request.is_xhr:
-        indent = 2
-    return app.response_class(dumps(data,
-        indent=indent),
-        mimetype='application/json')
+@app.route('/')
+def index():
+    return render_template('index.html', images=dumps(Media.get_latest()))
 
-def _random_string(length=16):
-    """Generates a random string containing a-z A-Z 0-9"""
-    pool = range(48, 57) + range(65, 90) + range(97, 122)
-    return ''.join(chr(random.choice(pool)) for _ in range(length))
-
-def _generate_filename(basepath, extension):
-    """Generate an unused filename"""
-    exists = True
-    while exists:
-        filename = secure_filename(_random_string() + extension)
-        path = basepath + filename
-        exists = os.path.exists(path)
-    return filename
-
-def _handle_upload(files):
-    if not files:
+@app.route('/upload', methods=['POST'])
+def upload():
+    if not request.files:
         return []
 
     uploaded = []
     magic_mime = magic.Magic(mime=True)
 
-    for key, upload in files.iteritems():
+    for key, upload in request.files.iteritems():
         # Check MIME
         mime = magic_mime.from_buffer(upload.stream.read(1024))
         if mime not in _image_mimes:
@@ -97,15 +67,15 @@ def _handle_upload(files):
         name = bleach.clean(name);
 
         # Save the image to a secure random filename
-        filename = _generate_filename(_upload_path, _image_extensions[mime])
+        filename = generate_filename(_upload_path, _image_extensions[mime])
         filepath = _upload_path + filename
         upload.save(filepath)
 
         # Get image details
         im = Image.open(filepath)
         # Convert image to jpeg if bmp
-        if mime != 'image/x-ms-bmp':
-            filename = _generate_filename(_upload_path, 
+        if mime == 'image/x-ms-bmp':
+            filename = generate_filename(_upload_path, 
                 _image_extensions[mime])
             newpath = _upload_path + filename
             im.convert('RGB').save(newpath, 'JPEG')
@@ -135,15 +105,7 @@ def _handle_upload(files):
                       thumbnail=thumbnail)
         media.save()
         uploaded.append(media)
-    return uploaded
-
-@app.route('/')
-def index():
-    return render_template('index.html', images=dumps(Media.get_latest()))
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    return jsonify(_handle_upload(request.files))
+    return jsonify(uploaded)
 
 @app.route('/<path:filename>')
 def catch_all(filename):
