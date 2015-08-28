@@ -6,6 +6,41 @@ import EventEmitter from 'events';
 import ee from './../Emitter.js';
 import ModalComponent from './../components/ModalComponent.js';
 
+const max_parallel_uploads = 2;
+
+class FileUploadQueue
+{
+    constructor() {
+        this.queue = [];
+        this.current_upload_count = 0;
+    }
+
+    checkQueue() {
+        if (this.queue.length > 0)
+            this.upload(this.queue.shift());
+    }
+
+    enterQueue(fileUpload) {
+        if (this.current_upload_count >= max_parallel_uploads)
+            return this.queue.push(fileUpload);
+        this.upload(fileUpload);
+    }
+
+    upload(fileUpload) {
+        fileUpload.ee.addListener('load', this.onUploadFinish.bind(this));
+        fileUpload.ee.addListener('error', this.onUploadFinish.bind(this));
+        fileUpload.ee.addListener('abort', this.onUploadFinish.bind(this));
+        this.current_upload_count++;
+        fileUpload.upload()
+    }
+
+    onUploadFinish() {
+        this.current_upload_count--;
+        this.checkQueue();
+    }
+}
+
+const fileUploadQueue = new FileUploadQueue();
 
 class FileUpload 
 {
@@ -13,12 +48,16 @@ class FileUpload
         this.file = file;
         this.content = 'Content-Disposition: form-data; name="files[]"; filename="' + file.name + '"\r\nContent-Type: ' + file.type + '\r\n\r\n';
         this.fileReader = new FileReader();
-        this.fileReader.onload = this.onLoad.bind(this);
+        this.fileReader.onload = this.queue.bind(this);
         this.ee = new EventEmitter();
     }
 
-    onLoad(e) {
+    queue(e) {
         this.content += e.target.result + '\r\n';
+        fileUploadQueue.enterQueue(this);
+    }
+
+    upload(e) {
         var boundary = "---------------------------" + Date.now().toString(16);
         var ajax = new XMLHttpRequest();
         ajax.upload.addEventListener('progress', this.createEmitter('progress'), false);
@@ -33,9 +72,7 @@ class FileUpload
 
     createEmitter(ns) {
         var ee = this.ee;
-        return (e) => {
-            ee.emit(ns, e)
-        }
+        return (e) => { ee.emit(ns, e) }
     }
 
     start() {
