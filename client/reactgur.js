@@ -86,14 +86,20 @@ var no_push_state = [
 ];
 
 document.body.addEventListener('click', (e) => {
-    if (e.target.pathname) {
+    // Bubble up the chain to check for a link
+    var link = e.target;
+    while (!link.pathname && link.parentNode)
+        link = link.parentNode;
+
+    // If there is a link, prevent the page change
+    if (link.pathname) {
         e.preventDefault();
-        if (e.target.href === '#')
+        if (link.href === '#')
             return;
-        if (no_push_state.indexOf(e.target.pathname) == -1) {
-            history.pushState({}, '', e.target.pathname);
+        if (no_push_state.indexOf(link.pathname) == -1) {
+            history.pushState({}, '', link.pathname);
         }
-        path_change(e.target.pathname);
+        path_change(link.pathname);
     }
 });
 
