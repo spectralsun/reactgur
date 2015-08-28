@@ -8,7 +8,7 @@
     <meta name="description" content="Upload your images with reactgur.">
     <meta name="author" content="Garrett Seward">
 
-    <title>Reactgur</title>
+    <title>{{ app_name }}</title>
 
     {% assets 'css' %}
     <link href="{{ ASSET_URL }}" rel="stylesheet">
@@ -17,9 +17,11 @@
 
   <body>
     <div id="entry"></div>
-    {% include 'modals/upload.html' %}
     <script type="text/javascript">
-      var IMAGES = {{ images|safe }}
+      var IMAGES = {{ images|safe }};
+      var APP_NAME = '{{ app_name }}';
+      var APP_CONF = {{ app_conf|safe }};
+      var APP_DATA = {{ app_data|safe }}
     </script>
     <script type="text/javascript" src="/static/bundle.js"></script>
   </body>
