@@ -43,6 +43,11 @@ let routes = (
     <Route>
         <Route handler={HomePage} path="/" />
         <Route handler={HomePage} path="/home" />
+
+        // noop routes
+        <Route path="/login" />
+        <Route path="/register" />
+        <Route path="/upload" />
     </Route>
 );
 let router = Router.create({
@@ -93,8 +98,8 @@ document.body.addEventListener('click', (e) => {
 });
 
 window.onpopstate = function() {
-    if(path_change(document.location.pathname) == opened_modal)
-        rerender_app();
+    path_change(document.location.pathname);
+    
 }
 if (emit_push_state(document.location.pathname)) {
     render_app(HomePage);
