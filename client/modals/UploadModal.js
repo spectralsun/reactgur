@@ -141,11 +141,15 @@ export default class UploadModal extends ModalComponent
     }
 
     onUploadFinish() {
-        this.setState({ uploads: this.state.uploads - 1 });
-        if (this.state.uploads == 0) {
+        var upload_count = this.state.uploads - 1;
+        if (upload_count == 0) {
             this.uploads = [];
-            this.close();
         }
+        this.setState({ show: upload_count > 0, uploads: upload_count });
+    }
+
+    cancel() {
+
     }
 
     close(props) {
@@ -155,22 +159,38 @@ export default class UploadModal extends ModalComponent
     }
     
     render() {
-        console.log(this.uploads)
+        var header = this.state.uploads > 0 ? (
+            <Modal.Header>
+                <Modal.Title>Uploading Images...</Modal.Title>
+            </Modal.Header>
+        ) : (
+            <Modal.Header closeButton>
+                <Modal.Title>Upload Images</Modal.Title>
+            </Modal.Header>
+        );
+        var upload_button = this.state.uploads == 0 ? (
+            <span id="upload_button" className="btn btn-success btn-lg">
+                <i className="glyphicon glyphicon-plus"/>
+                <span> Select files...</span>
+                <input type="file" name="file" multiple onChange={this.onInputChange.bind(this)} />
+            </span>
+        ) : null;
+        var footer_button = this.state.uploads == 0 ? (
+            <Button onClick={this.close.bind(this)}>Close</Button>
+        ) : (
+            <Button onClick={this.cancel.bind(this)}>Cancel</Button>
+        );
         return (   
             <Modal show={this.state.show} onHide={this.close.bind(this)}>
-                <Modal.Header closeButton>
-                    <Modal.Title>Upload Images</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    <form>
-                        <input type="file" name="file" multiple onChange={this.onInputChange.bind(this)} />
-                    </form>
+                {header}
+                <Modal.Body className="text-center">
+                    {upload_button}
                     <div>
                         {this.uploads}
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button onClick={this.close.bind(this)}>Close</Button>
+                    {footer_button}
                 </Modal.Footer>
             </Modal>
         )
