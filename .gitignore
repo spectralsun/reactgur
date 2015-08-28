@@ -2,3 +2,4 @@ config.py
 sqlite.db
 *.pyc
 reactgur/static/uploads/
+node_modules
