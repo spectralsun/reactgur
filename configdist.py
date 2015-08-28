@@ -1,3 +1,7 @@
+# Flask config
+SECRET_KEY = 'this is not secret so you should change it'
+
+# Database config
 DATABASE_URL = 'sqlite:///sqlite.db'
 
 IMAGE_ACCEPT_MIMES = ['image/jpeg', 
