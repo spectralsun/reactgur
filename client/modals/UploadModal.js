@@ -165,7 +165,10 @@ export default class UploadModal extends ModalComponent
             </Modal.Header>
         ) : (
             <Modal.Header closeButton>
-                <Modal.Title>Upload Images</Modal.Title>
+                <Modal.Title className="text-center">
+                    <span className="glyphicon glyphicon-cloud-upload"></span> 
+                    <span> Upload Images</span>
+                </Modal.Title>
             </Modal.Header>
         );
         var upload_button = this.state.uploads == 0 ? (
@@ -178,7 +181,7 @@ export default class UploadModal extends ModalComponent
         var footer_button = this.state.uploads == 0 ? (
             <Button onClick={this.close.bind(this)}>Close</Button>
         ) : (
-            <Button onClick={this.cancel.bind(this)}>Cancel</Button>
+            <Button bsStyle="danger" onClick={this.cancel.bind(this)}>Cancel</Button>
         );
         return (   
             <Modal show={this.state.show} onHide={this.close.bind(this)}>
