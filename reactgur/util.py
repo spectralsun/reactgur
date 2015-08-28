@@ -1,4 +1,5 @@
 import simplejson as json
+from flask import request, current_app
 from flask.json import dumps
 from werkzeug import secure_filename
 
@@ -11,16 +12,24 @@ class ExtensibleJSONEncoder(json.JSONEncoder):
         return super(ExtensibleJSONEncoder, self).default(obj)
 
 def jsonify(*args, **kwargs):
-    """Improved json response factory"""
-    indent = None
-    data = args[0] if args else dict(kwargs)
-   
-    if app.config['JSONIFY_PRETTYPRINT_REGULAR'] \
-       and not request.is_xhr:
-        indent = 2
-    return app.response_class(dumps(data,
-        indent=indent),
-        mimetype='application/json')
+    """
+    Returns a json response
+    """
+    data = None
+    indent = not request.is_xhr
+    status = kwargs.pop('_status_code', 200)
+    if args:
+        data = args[0] if len(args) == 1 else args
+    if kwargs:
+        if data:
+            if type(data) != list:
+                data = [data]
+            data.append(dict(**kwargs))
+        else:
+            data = dict(**kwargs)
+    return current_app.response_class(dumps(data, indent=indent), 
+        status=status,
+        mimetype='application/json')    
 
 def random_string(length=16):
     """Generates a random string containing a-z A-Z 0-9"""
