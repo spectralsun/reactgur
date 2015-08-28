@@ -1,5 +1,5 @@
 config.py
 sqlite.db
 *.pyc
-reactgur/static/uploads/
+uploads
 node_modules
