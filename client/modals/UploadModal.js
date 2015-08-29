@@ -126,7 +126,7 @@ export default class UploadModal extends ModalComponent
         super(props)
         this.uploads = []
         this.state = { uploads: 0 }
-        ee.addListener('push_state:/upload', this.open.bind(this));
+        ee.addListener('route:/upload', this.open.bind(this));
     }
 
 
