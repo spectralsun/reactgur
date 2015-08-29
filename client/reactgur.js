@@ -1,90 +1,61 @@
 import React from 'react';
-import Router, {Route, RouteHandler} from 'react-router';
+import NotificationSystem from 'react-notification-system';
 import xhttp from 'xhttp';
 
-import HomePage from './pages/HomePage.js';
+import NavbarComponent from './components/NavbarComponent.js';
+import PageComponent from './components/PageComponent.js';
 
 import LoginModal from './modals/LoginModal.js';
+import MediaModal from './modals/MediaModal.js';
 import RegisterModal from './modals/RegisterModal.js';
 import UploadModal from './modals/UploadModal.js';
 
-import NavbarComponent from './components/NavbarComponent.js';
-
 import ee from './Emitter.js';
 
-var current_layout;
 
-let render_app = (Page) => {
-    current_layout = (
-        <div id="app">
-            <NavbarComponent/>
-            <div className="container">
-                <Page/>
-            </div>
-            <RegisterModal/>
-            <LoginModal/>
-            <UploadModal/>
-        </div>
-    )
-    React.render(current_layout, document.getElementById('entry'));
-}
-let rerender_app = () => {
-    React.render(current_layout, document.getElementById('entry'));
-}
-ee.addListener('render', rerender_app);
 
-ee.addListener('update_app_data', (data) => {
-    window.APP_DATA = data;
-    ee.emit('app_data', data);
-    ee.emit('render');
-})
-
-let routes = (
-    <Route>
-        <Route handler={HomePage} path="/" />
-        <Route handler={HomePage} path="/home" />
-
-        // noop routes
-        <Route path="/login" />
-        <Route path="/register" />
-        <Route path="/upload" />
-    </Route>
-);
-let router = Router.create({
-    routes: routes, 
-    location: Router.HistoryLocation
-}); 
-router.run((Root) => { render_app(Root); });
-
-let emit_push_state = (path) => {
-    return ee.emit('push_state:' + path);
-}
-
-var last_page = '/home';
-const opened_modal = 1;
-const rendered_page = 2;
-let path_change = (path) => {
-    if (emit_push_state(path))
-        return opened_modal;
-    last_page = path;
-    try {
-        ee.emit('close_open_modal');
-        router.refresh();
-    } catch (ex) {
-        console.error(ex);
+class Reactgur extends React.Component 
+{
+    constructor(props) {
+        super(props);
     }
-    return rendered_page;
+    
+    componentDidMount() {
+        this._notificationSystem = this.refs.notificationSystem;
+    }
+
+    addNotification(data) {
+        this._notificationSystem.addNotification(data);
+    }
+
+    render() {
+        return (
+            <div id="app">
+                <NavbarComponent ref="NavbarComponent"/>
+                <PageComponent ref="pageComponent"/>
+                <LoginModal refs="loginModal"/>
+                <MediaModal refs="mediaModal"/>
+                <RegisterModal refs="registerModal"/>
+                <UploadModal refs="uploadModa"/>
+                <NotificationSystem ref='notificationSystem' />
+            </div>
+        );
+    }
 }
 
-ee.addListener('modal_close', (modal) => {
-    history.pushState({}, '', last_page);
-    path_change(last_page);
-});   
+React.render(<Reactgur/>, document.getElementById('entry'));
 
-var no_push_state = [
+let path_change = (path) => {
+    var emit_path = path;
+    if (path.indexOf('/i/') === 0) {
+        emit_path = '/i/:image';
+    }
+    ee.emit('route:' + emit_path);
+}
+
+const no_push_state = [
     '/logout'
 ];
-
 document.body.addEventListener('click', (e) => {
     // Bubble up the chain to check for a link
     var link = e.target;
@@ -92,26 +63,31 @@ document.body.addEventListener('click', (e) => {
         link = link.parentNode;
 
     // If there is a link, prevent the page change
-    if (link.pathname) {
+    if (link.pathname)
         e.preventDefault();
-        if (link.href === '#')
-            return;
+    if (link.pathname && 
+        link.className.indexOf('ignore') === -1 &&
+        link.href.length > 0 && link.href != '#') {
+        var path = link.pathname;
         if (no_push_state.indexOf(link.pathname) == -1) {
             history.pushState({}, '', link.pathname);
         }
-        path_change(link.pathname);
+        path_change(path);
     }
 });
-
 window.onpopstate = function() {
     path_change(document.location.pathname);
     
 }
-if (emit_push_state(document.location.pathname)) {
-    render_app(HomePage);
-}
+path_change(document.location.pathname);
 
-ee.addListener('push_state:/logout', () => {
+ee.addListener('update_app_data', (data) => {
+    window.APP_DATA = data;
+    ee.emit('app_data', data);
+    ee.emit('render');
+})
+
+ee.addListener('route:/logout', () => {
     xhttp({
         url: '/logout',
         method: 'post',
