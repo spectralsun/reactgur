@@ -23,6 +23,9 @@
       var APP_CONF = {{ app_conf|safe }};
       var APP_DATA = {{ app_data|safe }}
     </script>
+    {% assets 'js' %}
+    <script type="text/javascript" src="{{ ASSET_URL }}"></script>
+    {% endassets %}
     <script type="text/javascript" src="/static/bundle.js"></script>
   </body>
 </html>

@@ -45,9 +45,16 @@ assets.load_path = [
     root + '/static/css',
     theme_path
 ]
-css = Bundle('bootstrap/dist/css/bootstrap.min.css',
-             'base.css',
-              Bundle(*theme_files))
+js = Bundle(
+    'isotope-layout/dist/isotope.pkgd.min.js',
+    'isotope-packery/packery-mode.pkgd.min.js'
+)
+assets.register('js', js)
+css = Bundle(
+    'bootstrap/dist/css/bootstrap.min.css',
+     'base.css',
+      Bundle(*theme_files)
+)
 assets.register('css', css)
 
 @app.teardown_appcontext
@@ -58,10 +65,8 @@ def shutdown_session(response):
 @app.route('/<path:filename>')
 def index(filename=None):
     # Check if its an image to render
-    print os.path.join(upload_path, filename)
     if filename and os.path.exists(os.path.join(upload_path, filename)):
-        return send_from_directory(upload_path, filename, 
-            as_attachment=True)
+        return send_from_directory(upload_path, filename, as_attachment=True)
     context = dict(images=dumps(Media.get_latest()))
     context['app_name'] = app.config['APP_NAME']
     context['app_conf'] = dumps(dict(
