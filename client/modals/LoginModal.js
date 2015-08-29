@@ -10,7 +10,21 @@ export default class LoginModal extends ModalComponent
 {
     constructor(props) {
         super(props)
-        ee.addListener('push_state:/login', this.open.bind(this));
+        ee.addListener('route:/login', this.open.bind(this));
+        ee.addListener('route:/upload', this.checkUploadPrivilege.bind(this))
+    }
+
+    checkUploadPrivilege() {
+        if (APP_CONF.upload_login_required && !APP_DATA.authed) {
+            this.open();
+            history.pushState({}, '', '/login');
+            this.open_upload_on_login = true;
+        }
+    }
+
+    open() {
+        this.open_upload_on_login = false;
+        super.open();
     }
 
     submit() {
@@ -36,7 +50,11 @@ export default class LoginModal extends ModalComponent
 
     onLoginSuccess(data) {
         ee.emit('update_app_data', data);
-        this.close();
+        if (this.open_upload_on_login) {
+            history.pushState({}, '', '/upload');
+            ee.emit('route:/upload');
+        } else 
+            this.close();
     }
 
     onLoginFailure(data) {
@@ -70,7 +88,7 @@ export default class LoginModal extends ModalComponent
                     <form>
                         <Input type='text' label='Username or Email' placeholder='Enter email/username' name='username' onKeyDown={this.onKeyDown.bind(this)} />
                         {get_error('username')}
-                        <Input type='password' label='Password' name='password' />
+                        <Input type='password' label='Password' name='password' onKeyDown={this.onKeyDown.bind(this)} />
                         {get_error('password')}
                     </form>
                     <hr/>

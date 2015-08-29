@@ -126,9 +126,14 @@ export default class UploadModal extends ModalComponent
         super(props)
         this.uploads = []
         this.state = { uploads: 0 }
-        ee.addListener('route:/upload', this.open.bind(this));
+        ee.addListener('route:/upload', this.checkUploadPrivilege.bind(this));
     }
 
+    checkUploadPrivilege() {
+        if (APP_CONF.upload_login_required && !APP_DATA.authed) 
+            return;
+        this.open();
+    }
 
     onInputChange(e) {
         for (var x = 0; x < e.target.files.length; x++) {
