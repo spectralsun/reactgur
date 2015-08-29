@@ -8,11 +8,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from reactgur.database import Model
 
-try:
-    from config import UPLOAD_WEB_PATH, UPLOAD_PATH
-except:
-    from configdist import UPLOAD_WEB_PATH, UPLOAD_PATH
-
 
 class Media(Model):
     __tablename__ = 'media'
