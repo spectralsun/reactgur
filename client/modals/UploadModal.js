@@ -164,41 +164,38 @@ export default class UploadModal extends ModalComponent
     }
     
     render() {
-        var header = this.state.uploads > 0 ? (
-            <Modal.Header>
-                <Modal.Title>Uploading Images...</Modal.Title>
-            </Modal.Header>
-        ) : (
-            <Modal.Header closeButton>
-                <Modal.Title className="text-center">
-                    <span className="glyphicon glyphicon-cloud-upload"></span> 
-                    <span> Upload Images</span>
-                </Modal.Title>
-            </Modal.Header>
-        );
-        var upload_button = this.state.uploads == 0 ? (
-            <span id="upload_button" className="btn btn-success btn-lg">
-                <i className="glyphicon glyphicon-plus"/>
-                <span> Select files...</span>
-                <input type="file" name="file" multiple onChange={this.onInputChange.bind(this)} />
-            </span>
-        ) : null;
-        var footer_button = this.state.uploads == 0 ? (
-            <Button onClick={this.close.bind(this)}>Close</Button>
-        ) : (
-            <Button bsStyle="danger" onClick={this.cancel.bind(this)}>Cancel</Button>
-        );
         return (   
             <Modal show={this.state.show} onHide={this.close.bind(this)}>
-                {header}
+                {this.state.uploads > 0 ? (
+                    <Modal.Header>
+                        <Modal.Title>Uploading Images...</Modal.Title>
+                    </Modal.Header>
+                ) : (
+                    <Modal.Header closeButton>
+                        <Modal.Title className="text-center">
+                            <span className="glyphicon glyphicon-cloud-upload"></span> 
+                            <span> Upload Images</span>
+                        </Modal.Title>
+                    </Modal.Header>
+                )}
                 <Modal.Body className="text-center">
-                    {upload_button}
+                    {this.state.uploads == 0 ? (
+                        <span id="upload_button" className="btn btn-success btn-lg">
+                            <i className="glyphicon glyphicon-plus"/>
+                            <span> Select files...</span>
+                            <input type="file" name="file" multiple onChange={this.onInputChange.bind(this)} />
+                        </span>
+                    ) : null}
                     <div>
                         {this.uploads}
                     </div>
                 </Modal.Body>
                 <Modal.Footer>
-                    {footer_button}
+                    {this.state.uploads == 0 ? (
+                        <Button onClick={this.close.bind(this)}>Close</Button>
+                    ) : (
+                        <Button bsStyle="danger" onClick={this.cancel.bind(this)}>Cancel</Button>
+                    )}
                 </Modal.Footer>
             </Modal>
         )
