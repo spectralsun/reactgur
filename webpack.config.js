@@ -2,7 +2,7 @@
 
 module.exports = {
   entry: [
-    './client/reactgur.js'
+    './client/Reactgur.js'
   ],
   output: {
     path: __dirname,
