@@ -5,6 +5,11 @@ import scrollToPos from '../scrollToPos.js';
 
 export default class MediaComponent extends React.Component 
 {
+    constructor(props) {
+        super(props);
+        this.img = [];
+    }
+
     componentWillMount() {
         this.setMaxSize(); 
     }
@@ -48,16 +53,16 @@ export default class MediaComponent extends React.Component
     }
 
     onLayoutComplete() {
-        if (this.scrollPos) {
-            var item = this.expanded.item;
+        if (this.scrollTo) {
+            var item = this.scrollTo.item;
             var height = item.getBoundingClientRect().height;
             var marginTop = parseInt(item.style.marginTop);
             var topPos = parseInt(item.style.top)
             var scrollPos = topPos - ((window.innerHeight - (height + (marginTop * 2))) / 2) + 42;
-            if (this.expanded.img.height == this.max_height) 
+            if (this.scrollTo.img.height == this.max_height) 
                 scrollPos = topPos + marginTop - 4;
-            scrollToPos(scrollPos);
-            this.scrollPos = false;
+            scrollToPos(scrollPos); 
+            this.scrollTo = false;
         }
     }
 
@@ -73,13 +78,14 @@ export default class MediaComponent extends React.Component
             this.expanded.item.style.marginLeft = '4px';
             this.expanded.item.style.marginTop = '4px';
             if (this.expanded.id === clicked.id) {
+                this.scrollTo = this.expanded;
                 this.expanded = null;
                 return;
             }
         }
         this.expanded = clicked;
         clicked.img.src = clicked.link.dataset.href;
-        this.scrollPos = true;
+        this.scrollTo = clicked;
     }
 
     onImageLoad() {
@@ -117,6 +123,17 @@ export default class MediaComponent extends React.Component
         }
     }
 
+    setScrollPos() {
+        var item = this.expanded.item;
+        var height = item.getBoundingClientRect().height;
+        var marginTop = parseInt(item.style.marginTop);
+        var topPos = parseInt(item.style.top)
+        var scrollPos = topPos - ((window.innerHeight - (height + (marginTop * 2))) / 2) + 42;
+        if (this.expanded.img.height == this.max_height) 
+            scrollPos = topPos + marginTop - 4;
+        scrollToPos(scrollPos);
+    }
+
     updateImgStyles() {
          var image_style = {
             maxWidth: this.max_width,
@@ -134,8 +151,8 @@ export default class MediaComponent extends React.Component
 
     renderImage(image) {
         return (
-            <div data-id={image.path} 
-                 key={image.path} 
+            <div data-id={image.href} 
+                 key={image.href} 
                  className="media-item well">
                 <a className="image ignore" 
                    href="#"
