@@ -42,7 +42,7 @@ theme_files = tuple([f for f in os.listdir(theme_path) \
 assets = Environment(app)
 assets.load_path = [
     root + '/../node_modules',
-    root + '/static/css',
+    root + '/../client/style',
     theme_path
 ]
 js = Bundle(
@@ -52,8 +52,8 @@ js = Bundle(
 assets.register('js', js)
 css = Bundle(
     'bootstrap/dist/css/bootstrap.min.css',
-     'base.css',
-      Bundle(*theme_files)
+    'base.css',
+    Bundle(*theme_files)
 )
 assets.register('css', css)
 

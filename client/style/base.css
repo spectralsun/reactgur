@@ -1,0 +1,40 @@
+a,
+a:hover,
+a:focus,
+a:active {
+    outline: none!important;
+}
+#page {
+    margin-top: 60px;
+}
+#upload_button {
+    position: relative;
+}
+
+#upload_button input {
+    position: absolute;
+    top: 0;
+    right: 0;
+    font-size: 200px;
+    opacity: 0;
+}
+#page .panel {
+    padding-left: 65px;
+}
+
+.media-item.well {
+    margin: 4px;
+    border-radius: 0;
+    padding: 4px;
+    display: inline-block;
+}
+
+.navbar .navbar-brand {
+    font-size: 25px;
+    font-weight: bold;
+    padding-top: 10px;
+}
+
+.nav li > a {
+    font-size: 17px;
+}
