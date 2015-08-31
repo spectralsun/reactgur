@@ -152,7 +152,6 @@ export default class MediaComponent extends React.Component
                 </div>
             );
         }
-        console.log(mediaItems)
         return (
             <div ref="isoContainer" className="panel media-component text-center">
                 {mediaItems}

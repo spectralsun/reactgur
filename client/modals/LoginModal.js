@@ -4,6 +4,7 @@ import {Modal, Button, Input, Alert} from 'react-bootstrap';
 
 import ee from './../Emitter.js';
 import ModalComponent from './../components/ModalComponent.js';
+import LoginForm from './../forms/LoginForm.js';
 
 
 export default class LoginModal extends ModalComponent
@@ -14,6 +15,11 @@ export default class LoginModal extends ModalComponent
         ee.addListener('route:/upload', this.checkUploadPrivilege.bind(this))
     }
 
+    componentDidUpdate() {
+        if (this.refs.loginForm)
+            this.refs.loginForm.ee.removeAllListeners('success')
+                                  .addListener('success', this.onLoginSuccess.bind(this));
+    }
     checkUploadPrivilege() {
         if (APP_CONF.upload_login_required && !APP_DATA.authed) {
             this.open();
@@ -28,24 +34,7 @@ export default class LoginModal extends ModalComponent
     }
 
     submit() {
-        var modal = this;
-        var data = {
-            username: document.querySelector('[name="username"]').value,
-            password: document.querySelector('[name="password"]').value,
-        }
-
-        xhttp({
-            url: '/login',
-            method: 'post',
-            headers: {
-                'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-            },
-            data: data
-        })
-
-        .then(this.onLoginSuccess.bind(this))
-
-        .catch(this.onLoginFailure.bind(this));
+        this.refs.loginForm.submit();
     }
 
     onLoginSuccess(data) {
@@ -57,40 +46,14 @@ export default class LoginModal extends ModalComponent
             this.close();
     }
 
-    onLoginFailure(data) {
-        if (data) {
-            this.setState({ errors: data });
-            console.log(data, this.state)
-        }
-    }
-
-    onKeyDown(e) {
-        if (e.keyCode == 13)
-            this.submit()
-    }
-    
     render() {
-        var errors = this.state.errors;
-        this.state.errors = null;
-        let get_error = (name) => {
-            if (errors && errors[name])
-                return (
-                    <Alert bsStyle='danger'>{errors[name]}</Alert>
-                )
-            return null;
-        }
         return (   
             <Modal show={this.state.show} onHide={this.close.bind(this)}>
                 <Modal.Header closeButton>
                     <Modal.Title>Login</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    <form>
-                        <Input type='text' label='Username or Email' placeholder='Enter email/username' name='username' onKeyDown={this.onKeyDown.bind(this)} />
-                        {get_error('username')}
-                        <Input type='password' label='Password' name='password' onKeyDown={this.onKeyDown.bind(this)} />
-                        {get_error('password')}
-                    </form>
+                    <LoginForm ref="loginForm"/>
                     <hr/>
                     <div className="text-center">
                         Register for free <a href="/register">here</a>.
