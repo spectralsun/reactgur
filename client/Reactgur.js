@@ -3,7 +3,7 @@ import NotificationSystem from 'react-notification-system';
 import xhttp from 'xhttp';
 
 import NavbarComponent from './components/NavbarComponent.js';
-import PageComponent from './components/PageComponent.js';
+import PagesComponent from './components/PagesComponent.js';
 
 import LoginModal from './modals/LoginModal.js';
 import MediaModal from './modals/MediaModal.js';
@@ -11,7 +11,6 @@ import RegisterModal from './modals/RegisterModal.js';
 import UploadModal from './modals/UploadModal.js';
 
 import ee from './Emitter.js';
-
 
 
 class Reactgur extends React.Component 
@@ -32,7 +31,7 @@ class Reactgur extends React.Component
         return (
             <div id="app">
                 <NavbarComponent ref="NavbarComponent"/>
-                <PageComponent ref="pageComponent"/>
+                <PagesComponent ref="pageComponent"/>
                 <LoginModal refs="loginModal"/>
                 <MediaModal refs="mediaModal"/>
                 <RegisterModal refs="registerModal"/>
