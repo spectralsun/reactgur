@@ -9,7 +9,7 @@ export default class NavbarComponent extends React.Component
 {
   constructor(props) {
     super(props)
-    this.state = window.APP_DATA;
+    this.state = APP_DATA;
     ee.addListener('app_data', this.setData.bind(this));
   }  
 
@@ -18,27 +18,36 @@ export default class NavbarComponent extends React.Component
   }
 
   render() { 
-    if (!this.state)
-      this.getInitialState();
     if (this.state.authed) {
       var userNameAndIcon = (
         <span>
           <span className="glyphicon glyphicon-user"></span>
-          <span>{this.state.username}</span>
+          <span> {this.state.username}</span>
         </span>
       );
       var userNav = (
-        <DropdownButton eventKey={3} title={userNameAndIcon} right>
-            <MenuItem eventKey={1} href='/logout'>Logout</MenuItem>
+        <DropdownButton title={userNameAndIcon} right>
+            <MenuItem href={'/' + this.state.username + '/images'}>Images</MenuItem>
+            <MenuItem href={'/' + this.state.username + '/albums'}>Albums</MenuItem>
+            <MenuItem href='/logout'>Logout</MenuItem>
         </DropdownButton>
       );
     } else {
-      var userNav = (<NavItem eventKey={1} href='/login'>Login</NavItem>);
+      var userNav = (<NavItem href='/login'>Login</NavItem>);
     }
+    var brand = (
+      <a href="/">
+        <span className="glyphicon glyphicon-picture"></span>
+        <span> {APP_NAME}</span>
+      </a>
+    )
     return (
-      <Navbar brand={window.APP_NAME} inverse>
+      <Navbar brand={brand} inverse fixedTop>
         <Nav>
-          <NavItem eventKey={2} href='/upload'>Upload</NavItem>
+          <NavItem href='/upload'>
+            <span className="glyphicon glyphicon-cloud-upload"></span>
+            <span> Upload</span>
+          </NavItem>
         </Nav>
         <Nav right>
           {userNav}
