@@ -59,20 +59,23 @@ class FileUpload
 
     upload(e) {
         var boundary = "---------------------------" + Date.now().toString(16);
-        var ajax = new XMLHttpRequest();
-        ajax.upload.addEventListener('progress', this.createEmitter('progress'), false);
-        ajax.upload.addEventListener('load', this.createEmitter('load'), false);
-        ajax.upload.addEventListener('error', this.createEmitter('error'), false);
-        ajax.upload.addEventListener('abort', this.createEmitter('abort'), false);
-        ajax.open('post', '/api/v1/media', true);
-        ajax.setRequestHeader('Content-Type', 'multipart\/form-data; boundary=' + boundary);
-        ajax.setRequestHeader('X-CSRFToken', document.querySelector('meta[name="csrf-token"]').content);
-        ajax.sendAsBinary('--' + boundary + '\r\n' + this.content + '\r\n--' + boundary + '--\r\n')
+        var request = new XMLHttpRequest();
+        request.upload.onprogress = this.createEmitter('progress');
+        request.upload.onload = this.createEmitter('load');
+        request.upload.onloadstart = this.createEmitter('loadstart');
+        request.upload.onloadend = this.createEmitter('loadend');
+        request.upload.onerror = this.createEmitter('error');
+        request.upload.onabort = this.createEmitter('abort');
+        request.onreadystatechange = this.createEmitter('readystatechange');
+        request.open('post', '/api/v1/media', true);
+        request.setRequestHeader('Content-Type', 'multipart\/form-data; boundary=' + boundary);
+        request.setRequestHeader('X-CSRFToken', document.querySelector('meta[name="csrf-token"]').content);
+        request.sendAsBinary('--' + boundary + '\r\n' + this.content + '\r\n--' + boundary + '--\r\n')
     }
 
     createEmitter(ns) {
         var ee = this.ee;
-        return (e) => { ee.emit(ns, e) }
+        return (e) => { console.log(arguments); ee.emit(ns, e) }
     }
 
     start() {
@@ -85,10 +88,12 @@ class UploadComponent extends React.Component
     constructor(props) {
         super(props)
         this.upload = new FileUpload(this.props.file);
-        this.upload.ee.addListener('progress', this.onProgress.bind(this));
         this.upload.ee.addListener('load', this.onLoad.bind(this));
+        this.upload.ee.addListener('loadstart', this.onLoadStart.bind(this));
+        this.upload.ee.addListener('progress', this.onProgress.bind(this));
         this.upload.ee.addListener('error', this.onError.bind(this));
         this.upload.ee.addListener('abort', this.onAbort.bind(this));
+        this.upload.ee.addListener('readystatechange', this.onReadyStateChange.bind(this));
         this.state = { progress: 0 }
     }
 
@@ -96,13 +101,23 @@ class UploadComponent extends React.Component
         this.upload.start();
     }
 
-    onProgress(e) {
+    onLoadStart(e) {
         this.setState({ progress: (e.loaded/e.total) * 100 });
     }
 
     onLoad(e) {
         this.setState({ progress: (e.loaded/e.total) * 100 });
         this.props.ee.emit('load');
+    }
+
+    onReadyStateChange(e) {
+        if (e.target.readyState == 4 && e.target.status == 200) {
+            ee.emit('media_uploaded', JSON.parse(e.target.responseText))
+        }
+    }
+
+    onProgress(e) {
+        this.setState({ progress: (e.loaded/e.total) * 100 });
     }
 
     onError(e) {

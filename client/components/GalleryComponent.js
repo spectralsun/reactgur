@@ -25,13 +25,14 @@ export default class MediaComponent extends React.Component
 
     componentDidUpdate() {
         this.createIsoContainer();
-        var appended = [];
+        var new_media = [];
         var items = this.refs.isoContainer.getDOMNode().children;
         for (var x = 0; x < items.length; x++) {
             if (items[x].style.top === "")
-                appended.push(items[x]);
+                new_media.push(items[x]);
         }
-        this.iso.appended(appended);
+        this.appendMedia ? this.iso.appended(new_media) : this.iso.prepended(new_media);
+        this.appendMedia = false;
     }
 
     createIsoContainer() {
@@ -100,6 +101,7 @@ export default class MediaComponent extends React.Component
     }
     
     handleMoreImages(data) {
+        this.appendMedia = true;
         this.setState({images: this.state.images.concat(data)});
         this.loadLock = false;
     }
@@ -134,6 +136,10 @@ export default class MediaComponent extends React.Component
         })
         .then(this.handleMoreImages.bind(this))
         .catch(this.errorMoreImages.bind(this));
+    }
+
+    prependMedia(media) {
+        this.setState({images: [].concat(media, this.state.images)});
     }
 
     setItemMargin() {
