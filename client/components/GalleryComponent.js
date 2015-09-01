@@ -29,6 +29,8 @@ export default class MediaComponent extends React.Component
 
     componentDidUpdate() {
         this.createIsoContainer();
+        if (!this.refs.isoContainer)
+            return;
         var new_media = [];
         var items = this.refs.isoContainer.getDOMNode().children;
         for (var x = 0; x < items.length; x++) {
