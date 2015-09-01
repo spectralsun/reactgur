@@ -2,6 +2,8 @@ import React from 'react';
 import {Input} from 'react-bootstrap';
 import xhttp from 'xhttp';
 
+import ConfirmModal from './../modals/ConfirmModal.js';
+
 import ee from '../Emitter.js';
 import Scroll from '../Scroll.js';
 
@@ -9,10 +11,11 @@ export default class MediaComponent extends React.Component
 {
     constructor(props) {
         super(props);
-        this.state = {images: []}
+        this.state = {images: [], user: APP_DATA.username, is_admin: APP_DATA.is_admin}
         ee.addListener('page_wrapper', this.handlePageWrapper.bind(this));
         ee.addListener('resize', this.handleWindowResize.bind(this));
         ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
+        ee.addListener('app_data', this.handleAppData.bind(this));
     }
 
     componentWillMount() {
@@ -32,7 +35,9 @@ export default class MediaComponent extends React.Component
             if (items[x].style.top === "")
                 new_media.push(items[x]);
         }
-        this.appendMedia ? this.iso.appended(new_media) : this.iso.prepended(new_media);
+        this.appendMedia && new_media.length > 0 ? this.iso.appended(new_media) : this.iso.prepended(new_media);
+        if (new_media.length == 0)
+            this.iso.layout();
         this.appendMedia = false;
     }
 
@@ -51,8 +56,49 @@ export default class MediaComponent extends React.Component
         this.iso.layout(); 
     }
 
-    errorMoreImages(data) {
-        this.loadLock = false;
+    handleAppData(data) {
+        this.setState({user: data.username, is_admin: data.is_admin});
+    }
+
+    handleDeleteClick(e) {
+        var node = e.target;
+        while (node.className.indexOf('media-item') === -1)
+            node = node.parentNode;
+        this.deleteMediaId = node.dataset.id;
+        this.deleteMediaNode = node;
+        this.refs.confirmModal.setState({
+            message: 'Are you sure you wish to delete this image?',
+            title: 'Confirm Delete Image',
+            confirm: 'Delete Image',
+            cancel: 'Cancel'
+        })
+        this.refs.confirmModal.open(this.handleDeleteConfirm.bind(this));
+    }
+
+    handleDeleteConfirm(confirmed) {
+        if (!confirmed) return;
+        xhttp({
+            url: '/api/v1/media',
+            method: 'delete',
+            headers: { 'X-CSRFToken': this.csrfToken },
+            data: {id: this.deleteMediaId}
+        })
+        .then(this.handleDeleteSuccess.bind(this))
+        .catch(this.handleDeleteError.bind(this))
+    }
+
+    handleDeleteError() {
+
+    }
+
+    handleDeleteSuccess() {
+        this.iso.remove(this.deleteMediaNode);
+        var images = this.state.images.slice(0);
+        for (var x = 0; x < images.length; x++) 
+            if (images[x].href === this.deleteMediaId) {
+                images.splice(x, 1);
+                return this.setState({ images: images });
+            }
     }
 
     handleLayoutComplete() {
@@ -66,6 +112,16 @@ export default class MediaComponent extends React.Component
             this.scroll.scrollToPos(scrollPos); 
             this.scrollTo = false;
         }
+    } 
+
+    handleLoadError(data) {
+        this.loadLock = false;
+    }
+    
+    handleLoadSuccess(data) {
+        this.appendMedia = true;
+        this.setState({images: this.state.images.concat(data)});
+        this.loadLock = false;
     }
 
     handleItemClick(e) {
@@ -79,7 +135,8 @@ export default class MediaComponent extends React.Component
                 item = node;
             node = node.parentNode;
         }
-        if (overlay && item.className.indexOf('expanded') !== -1) 
+        if (overlay && (item.className.indexOf('expanded') !== -1 ||
+                        overlay.className.indexOf('media-overlay-top') !== -1)) 
             return; 
         var clicked = {
             id: item.dataset.id,
@@ -114,12 +171,6 @@ export default class MediaComponent extends React.Component
             this.iso.layout();
         }
     }
-    
-    handleMoreImages(data) {
-        this.appendMedia = true;
-        this.setState({images: this.state.images.concat(data)});
-        this.loadLock = false;
-    }
 
     handlePageWrapper(page_wrapper) {
         this.page_wrapper = page_wrapper;
@@ -130,7 +181,7 @@ export default class MediaComponent extends React.Component
         var container = this.refs.isoContainer.getDOMNode();
         var height = container.getBoundingClientRect().height + 81;
         if (this.scroll.position() == height - window.innerHeight) {
-            this.loadMore();
+            this.fetchMedia();
         }
     }
 
@@ -139,7 +190,7 @@ export default class MediaComponent extends React.Component
         this.updateImgStyles();
     }
 
-    loadMore() {
+    fetchMedia() {
         if (this.loadLock)
             return;
         this.loadLock = true;
@@ -149,8 +200,8 @@ export default class MediaComponent extends React.Component
             headers: { 'X-CSRFToken': this.csrfToken },
             params: { after: this.state.images[this.state.images.length - 1].href }
         })
-        .then(this.handleMoreImages.bind(this))
-        .catch(this.errorMoreImages.bind(this));
+        .then(this.handleLoadSuccess.bind(this))
+        .catch(this.handleLoadError.bind(this));
     }
 
     prependMedia(media) {
@@ -218,7 +269,7 @@ export default class MediaComponent extends React.Component
                 <img src={image.thumbnail.href} 
                          style={this.image_style}
                          onLoad={this.handleImageLoad.bind(this)} />
-                <div className='media-overlay'>
+                <div className='media-overlay media-overlay-bottom'>
                     <div className='media-overlay-wrapper'>
                         <div className='media-overlay-content'>
                             <span className='media-name'>{image.name}</span>
@@ -234,9 +285,19 @@ export default class MediaComponent extends React.Component
                                 <div className='media-overlay-background'></div>
                             </div>
                         </div>
+                        
                     </div>
                     <div className='media-overlay-background'></div>
                 </div>
+                {this.state.user && (this.state.user === image.user || this.state.is_admin) ? (
+                    <div className='media-overlay media-overlay-top'>
+                        <div className='media-delete-button media-api-button'
+                             onClick={this.handleDeleteClick.bind(this)}>
+                            <span className='glyphicon glyphicon-remove'></span>
+                            <div className='media-overlay-background'></div>
+                        </div>
+                    </div>
+                ) : null}
             </div>
         );
     }
@@ -254,10 +315,13 @@ export default class MediaComponent extends React.Component
                 </p>
             </div> 
         ) : (
-            <div ref="isoContainer" 
-                 className="panel media-component text-center"
-                 onScroll={this.handleScroll.bind(this)}>
-                {this.state.images.map(this.renderImage.bind(this))}
+            <div>
+                <div ref="isoContainer" 
+                     className="panel media-component text-center"
+                     onScroll={this.handleScroll.bind(this)}>
+                    {this.state.images.map(this.renderImage.bind(this))}
+                </div>
+                <ConfirmModal ref='confirmModal' />
             </div>
         );
     }

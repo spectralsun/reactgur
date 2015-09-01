@@ -39,7 +39,38 @@ a:active {
     min-height: 388px;
     min-width: 388px;
 }
-.media-overlay {
+.media-overlay-top {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    right: 4px;
+    overflow: hidden;
+    height: 50px;
+}
+.media-api-button {
+    position: absolute;
+    top: 4px;
+    cursor: pointer;
+}
+.media-api-button .media-overlay-background {
+    border-radius: 3px;
+}
+.media-delete-button {
+    position: absolute;
+    left: -31px;
+    transition: all 0.3s ease 0s;
+}
+.media-item:hover .media-delete-button {
+    left: 4px;
+}
+
+.media-delete-button .glyphicon {
+    color: red;
+    padding: 3px;
+    font-size: 25px;
+    z-index: 1;
+}
+.media-overlay-bottom {
     position: absolute;
     bottom: 4px;
     color: #fff;
@@ -50,10 +81,10 @@ a:active {
     text-overflow: ellipsis;
     transition: all 0.3s ease 0s;
 }
-.media-item:hover .media-overlay {
+.media-item:hover .media-overlay-bottom {
     height: 28px;
 }
-.media-item.expanded .media-overlay {
+.media-item.expanded .media-overlay-bottom {
     height: auto;
     max-height: 85px;
     overflow: visible;
@@ -86,7 +117,6 @@ a:active {
 .expanded .media-overlay-background {
     opacity: 0.9;
 }
-
 .media-links-button {
     position: absolute;
     right: 0;

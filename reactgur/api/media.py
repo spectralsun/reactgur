@@ -65,6 +65,10 @@ def post_media():
                       width=size[0], 
                       height=size[1],
                       thumbnail=thumbnail)
+        if current_user.is_authenticated():
+            media.user = current_user
+            thumbnail.user = current_user
+            
         media.save()
         uploaded.append(media)
     return jsonify(uploaded)
@@ -76,7 +80,14 @@ def get_media():
 
 @media_api.route('/api/v1/media', methods=['DELETE'])
 def delete_media():
-    pass
+    media = Media.get_by_filename(request.json['id'][1:])
+    if not media:
+        return jsonify(['Invalid media ID.'], _status_code=400)
+    if not current_user.is_authenticated() or \
+       (not media.is_owner(current_user) and not current_user.is_admin):
+       return jsonify(['Invalid access.'], _status_code=400)
+    media.delete()
+    return ''
 
 @media_api.route('/api/v1/media', methods=['PUT'])
 def put_media():

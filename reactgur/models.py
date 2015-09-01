@@ -42,6 +42,9 @@ class Media(Model):
     def get_absolute_path(self):
         return UPLOAD_PATH + self.filename
 
+    def is_owner(self, user):
+        return self.user_id == user.id
+
     def to_json(self):
         json = dict(
             href='/' + self.filename,
@@ -51,6 +54,8 @@ class Media(Model):
         )
         if self.thumbnail:
             json['thumbnail'] = self.thumbnail.to_json()
+        if self.user and self.thumbnail:
+            json['user'] = self.user.username
         return json
 
 class UserRegistrationRequest(Model):

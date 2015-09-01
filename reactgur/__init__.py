@@ -76,5 +76,6 @@ def index(filename=None):
     app_data = dict(authed=current_user.is_authenticated())
     if current_user.is_authenticated():
         app_data['username'] = current_user.username
+        app_data['is_admin'] = current_user.is_admin
     context['app_data'] = dumps(app_data)
     return render_template('index.html', **context)
