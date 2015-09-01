@@ -4,8 +4,12 @@ a:focus,
 a:active {
     outline: none!important;
 }
+#page_wrapper {
+    margin-top: 51px;
+    overflow: auto;
+}
 #page {
-    margin-top: 60px;
+    margin-top: 10px;
 }
 #upload_button {
     position: relative;
