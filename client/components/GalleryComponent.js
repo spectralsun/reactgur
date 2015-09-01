@@ -1,13 +1,15 @@
 import React from 'react';
+import xhttp from 'xhttp';
 
 import ee from '../Emitter.js';
-import scrollToPos from '../scrollToPos.js';
+import Scroll from '../Scroll.js';
 
 export default class MediaComponent extends React.Component 
 {
     constructor(props) {
         super(props);
-        this.img = [];
+        this.state = {images: 0}
+        ee.addListener('page_wrapper', this.handlePageWrapper.bind(this));
     }
 
     componentWillMount() {
@@ -15,10 +17,9 @@ export default class MediaComponent extends React.Component
     }
 
     componentDidMount() {
+        this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         if (this.iso)
             return;
-
-        // create masonry for specified container
         this.iso = new Isotope(this.refs.isoContainer.getDOMNode(), {
            layoutMode: 'packery',
            packery: {
@@ -27,32 +28,28 @@ export default class MediaComponent extends React.Component
             rowHeight: 194
            }
         });
-
-        this.iso.on('layoutComplete', this.onLayoutComplete.bind(this));
-
-        // focus the container
-        this.refs.isoContainer.getDOMNode().focus();
-
-        // relayout after reloading items
+        this.iso.on('layoutComplete', this.handleLayoutComplete.bind(this));
         this.iso.layout();
 
-        ee.addListener('resize', this.onWindowResize.bind(this));
+        ee.addListener('resize', this.handleWindowResize.bind(this));
+        ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
     }
 
     componentDidUpdate() {
-        // reload all items in container (bad for performance - should find a way to append/prepend by disabling react render)
-        this.iso.reloadItems();
-
-        // relayout after reloading items
-        this.iso.layout();
-
-        // force resize event
-        setTimeout(function() {
-            window.dispatchEvent(new Event('resize'));
-        }, 1);
+        var appended = [];
+        var items = this.refs.isoContainer.getDOMNode().children;
+        for (var x = 0; x < items.length; x++) {
+            if (items[x].style.top === "")
+                appended.push(items[x]);
+        }
+        this.iso.appended(appended);
     }
 
-    onLayoutComplete() {
+    errorMoreImages(data) {
+        this.loadLock = false;
+    }
+
+    handleLayoutComplete() {
         if (this.scrollTo) {
             var item = this.scrollTo.item;
             var height = item.getBoundingClientRect().height;
@@ -61,12 +58,12 @@ export default class MediaComponent extends React.Component
             var scrollPos = topPos - ((window.innerHeight - (height + (marginTop * 2))) / 2) + 42;
             if (this.scrollTo.img.height == this.max_height) 
                 scrollPos = topPos + marginTop - 4;
-            scrollToPos(scrollPos); 
+            this.scroll.scrollToPos(scrollPos); 
             this.scrollTo = false;
         }
     }
 
-    onImageClick(e) {
+    handleImageClick(e) {
         var clicked = {
             id: e.currentTarget.parentNode.dataset.id,
             item: e.currentTarget.parentNode,
@@ -79,6 +76,7 @@ export default class MediaComponent extends React.Component
             this.expanded.item.style.marginTop = '4px';
             if (this.expanded.id === clicked.id) {
                 this.scrollTo = this.expanded;
+                this.shrunkTo = this.expanded.img.src;
                 this.expanded = null;
                 return;
             }
@@ -88,16 +86,53 @@ export default class MediaComponent extends React.Component
         this.scrollTo = clicked;
     }
 
-    onImageLoad() {
-        if (this.expanded) {
+    handleImageLoad(e) {
+        if (this.expanded) 
             this.setItemMargin();
+        if (this.expanded || this.shrunkTo) {
+            this.shrunkTo = null;
+            this.iso.layout();
         }
-        this.iso.layout();
+    }
+    
+    handleMoreImages(data) {
+        this.props.images.push.apply(this.props.images, data);
+        this.setState({images: this.props.images.length});
+        this.loadLock = false;
     }
 
-    onWindowResize() {
+    handlePageWrapper(page_wrapper) {
+        this.page_wrapper = page_wrapper;
+        this.scroll = new Scroll(page_wrapper.getDOMNode());
+    }
+
+    handleScroll(e, page_wrapper) {
+        var container = this.refs.isoContainer.getDOMNode();
+        var height = container.getBoundingClientRect().height + 81;
+        if (this.scroll.position() == height - window.innerHeight) {
+            this.loadMore();
+        }
+    }
+
+    handleWindowResize() {
         this.setMaxSize();
         this.updateImgStyles();
+    }
+
+    loadMore() {
+        if (this.loadLock)
+            return;
+        this.loadLock = true;
+        xhttp({
+            url: '/load',
+            method: 'post',
+            headers: { 'X-CSRFToken': this.csrfToken },
+            data: {
+                after: this.props.images[this.props.images.length - 1].href
+            }
+        })
+        .then(this.handleMoreImages.bind(this))
+        .catch(this.errorMoreImages.bind(this));
     }
 
     setItemMargin() {
@@ -123,25 +158,15 @@ export default class MediaComponent extends React.Component
         }
     }
 
-    setScrollPos() {
-        var item = this.expanded.item;
-        var height = item.getBoundingClientRect().height;
-        var marginTop = parseInt(item.style.marginTop);
-        var topPos = parseInt(item.style.top)
-        var scrollPos = topPos - ((window.innerHeight - (height + (marginTop * 2))) / 2) + 42;
-        if (this.expanded.img.height == this.max_height) 
-            scrollPos = topPos + marginTop - 4;
-        scrollToPos(scrollPos);
-    }
-
-    updateImgStyles() {
-         var image_style = {
+    updateImgStyles() { 
+        var items = this.refs.isoContainer.getDOMNode().children;
+        var image_style = {
             maxWidth: this.max_width,
             maxHeight: this.max_height
         }
-        for (var x = 0; x < this.img.length; x++) {
-            this.img[x].getDOMNode().style.maxHeight = this.max_height + 'px';
-            this.img[x].getDOMNode().style.maxWidth = this.max_width + 'px';
+        for (var x = 0; x < items.length; x++) {
+            items[x].firstChild.firstChild.style.maxHeight = this.max_height + 'px';
+            items[x].firstChild.firstChild.style.maxWidth = this.max_width + 'px';
         }
         if (this.expanded) {
             this.setItemMargin();
@@ -159,11 +184,10 @@ export default class MediaComponent extends React.Component
                    data-title={image.name} 
                    data-thumbnail={image.thumbnail.href} 
                    data-href={image.href}  
-                   onClick={this.onImageClick.bind(this)}>
+                   onClick={this.handleImageClick.bind(this)}>
                     <img src={image.thumbnail.href} 
                          style={this.image_style}
-                         ref={(i) => this.img.push(i)}
-                         onLoad={this.onImageLoad.bind(this)}  />
+                         onLoad={this.handleImageLoad.bind(this)}  />
                 </a>
             </div>
         );
@@ -182,7 +206,9 @@ export default class MediaComponent extends React.Component
                 </p>
             </div> 
         ) : (
-            <div ref="isoContainer" className="panel media-component text-center">
+            <div ref="isoContainer" 
+                 className="panel media-component text-center"
+                 onScroll={this.handleScroll.bind(this)}>
                 {this.props.images.map(this.renderImage.bind(this))}
             </div>
         );
