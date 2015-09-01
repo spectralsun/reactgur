@@ -2,7 +2,7 @@ from datetime import datetime
 
 from flask import current_app
 from sqlalchemy import Column, DateTime, Integer, String, Boolean, Text, \
-    ForeignKey, or_
+    ForeignKey, or_, desc
 from sqlalchemy.orm import relationship, backref
 from werkzeug.security import check_password_hash, generate_password_hash
 
@@ -24,8 +24,19 @@ class Media(Model):
     user = relationship('User', backref='media')
 
     @classmethod
-    def get_latest(cls):
-        return cls.query.filter(cls.thumbnail_id != None).all()
+    def get_by_filename(cls, filename):
+        return cls.query.filter(cls.filename == filename).first()
+
+    @classmethod
+    def get_latest(cls, limit=30):
+        return cls.query.filter(cls.thumbnail_id != None) \
+                        .order_by(desc(cls.created_at)).limit(limit).all()
+
+    @classmethod
+    def get_latest_after(cls, after, limit=30):
+        return cls.query.filter(cls.created_at < after.created_at) \
+                        .filter(cls.thumbnail_id != None) \
+                        .order_by(desc(cls.created_at)).limit(limit).all()
 
     def get_absolute_path(self):
         return UPLOAD_PATH + self.filename
