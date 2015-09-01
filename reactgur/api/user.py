@@ -24,7 +24,9 @@ def register():
         new_user = User(form.username.data, form.email.data, form.password.data)
         new_user.save()
         if login_user(new_user):
-            return jsonify(authed=True, username=new_user.username)
+            return jsonify(authed=True, 
+                           username=new_user.username,
+                           is_admin=new_user.is_admin)
         return jsonify(authed=False)
     form.errors['_status_code'] = 400 
     return jsonify(**form.errors)
@@ -36,7 +38,9 @@ def login():
         form_user = User.get_user(form.username.data)
         if form_user and form_user.check_password(form.password.data):
             if login_user(form_user):
-                return jsonify(authed=True, username=form_user.username)
+                return jsonify(authed=True, 
+                               username=form_user.username,
+                               is_admin=form_user.is_admin)
             else:
                 return jsonify(username=['Your account is currently disabled.'], 
                     _status_code=400)
@@ -50,4 +54,4 @@ def login():
 @user_api.route('/api/v1/logout', methods=['POST'])
 def logout():
     logout_user()
-    return jsonify(authed=False)
+    return jsonify(authed=False, username=None, is_admin=False)
