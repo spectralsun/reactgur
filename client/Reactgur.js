@@ -6,7 +6,6 @@ import NavbarComponent from './components/NavbarComponent.js';
 import PagesComponent from './components/PagesComponent.js';
 
 import LoginModal from './modals/LoginModal.js';
-import MediaModal from './modals/MediaModal.js';
 import RegisterModal from './modals/RegisterModal.js';
 import UploadModal from './modals/UploadModal.js';
 
@@ -33,7 +32,6 @@ class Reactgur extends React.Component
                 <NavbarComponent ref="navbarComponent"/>
                 <PagesComponent ref="pageComponent"/>
                 <LoginModal refs="loginModal"/>
-                <MediaModal refs="mediaModal"/>
                 <RegisterModal refs="registerModal"/>
                 <UploadModal refs="uploadModa"/>
                 <NotificationSystem ref='notificationSystem' />
