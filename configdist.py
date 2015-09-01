@@ -6,6 +6,7 @@ DATABASE_URL = 'sqlite:///sqlite.db'
 
 # Reactgur Config
 APP_NAME = 'reactgur'
+EXTERNAL_URL = 'http://localhost:5000'
 REQUEST_REGISTRATION = False # Accounts must be requested
 REQUEST_REGISTRATION_EMAIL = '' # Email notified when accounts are requested
 IMAGE_ACCEPT_MIMES = ['image/jpeg', 

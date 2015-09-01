@@ -69,6 +69,7 @@ def index(filename=None):
     context = dict(images=dumps(Media.get_latest()))
     context['app_name'] = app.config['APP_NAME']
     context['app_conf'] = dumps(dict(
+        external_url=app.config['EXTERNAL_URL'],
         request_registration=app.config['REQUEST_REGISTRATION'],
         upload_requires_login=app.config['UPLOAD_REQUIRES_LOGIN']
     ))

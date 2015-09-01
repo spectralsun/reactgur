@@ -1,4 +1,5 @@
 import React from 'react';
+import {Input} from 'react-bootstrap';
 import xhttp from 'xhttp';
 
 import ee from '../Emitter.js';
@@ -56,10 +57,9 @@ export default class MediaComponent extends React.Component
 
     handleLayoutComplete() {
         if (this.scrollTo) {
-            var item = this.scrollTo.item;
-            var height = item.getBoundingClientRect().height;
-            var marginTop = parseInt(item.style.marginTop);
-            var topPos = parseInt(item.style.top)
+            var height = this.scrollTo.item.getBoundingClientRect().height;
+            var marginTop = parseInt(this.scrollTo.img.style.marginTop);
+            var topPos = parseInt(this.scrollTo.item.style.top)
             var scrollPos = topPos - ((window.innerHeight - (height + (marginTop * 2))) / 2) + 42;
             if (this.scrollTo.img.height == this.max_height) 
                 scrollPos = topPos + marginTop - 4;
@@ -68,17 +68,31 @@ export default class MediaComponent extends React.Component
         }
     }
 
-    handleImageClick(e) {
+    handleItemClick(e) {
+        var node = e.target;
+        var overlay = null;
+        var item = null;
+        while (!item) {
+            if (node.className.indexOf('media-overlay') !== -1)
+                overlay = node;
+            if (node.className.indexOf('media-item') !== -1)
+                item = node;
+            node = node.parentNode;
+        }
+        if (overlay && item.className.indexOf('expanded') !== -1) 
+            return; 
         var clicked = {
-            id: e.currentTarget.parentNode.dataset.id,
-            item: e.currentTarget.parentNode,
-            link: e.currentTarget,
-            img: e.target
+            id: item.dataset.id,
+            item: item,
+            img: item.firstChild
         }
         if (this.expanded) {
-            this.expanded.img.src = this.expanded.link.dataset.thumbnail;
-            this.expanded.item.style.marginLeft = '4px';
-            this.expanded.item.style.marginTop = '4px';
+            this.expanded.item.className = 'media-item well';
+            this.expanded.img.src = this.expanded.item.dataset.thumbnail;
+            this.expanded.img.style.marginLeft = '0px';
+            this.expanded.img.style.marginRight = '0px';
+            this.expanded.img.style.marginTop = '0px';
+            this.expanded.img.style.marginBottom = '0px';
             if (this.expanded.id === clicked.id) {
                 this.scrollTo = this.expanded;
                 this.shrunkTo = this.expanded.img.src;
@@ -87,7 +101,8 @@ export default class MediaComponent extends React.Component
             }
         }
         this.expanded = clicked;
-        clicked.img.src = clicked.link.dataset.href;
+        clicked.item.className = 'media-item well expanded';
+        clicked.img.src = clicked.item.dataset.href;
         this.scrollTo = clicked;
     }
 
@@ -147,13 +162,23 @@ export default class MediaComponent extends React.Component
         var img = this.expanded.img;
         var width = img.width + 16;
         var height = img.height + 16;
-
-        if (img.width == this.max_width) {
-            item.style.marginLeft = '4px';
-        } else {
-            item.style.marginLeft = Math.floor((((Math.ceil(width / 198) * 198) - width) / 2)) + 'px';
-        } 
-        item.style.marginTop = (Math.floor((((Math.ceil(height / 198) * 198) - height) / 2)) + 4) + 'px';
+        if (img.width < 380 && img.height < 380) {
+            img.style.marginTop = ((380 - img.height) / 2) + 'px'
+            return;
+        }
+        if (img.width >= 380) {
+            if (img.width == this.max_width) {
+                img.style.marginLeft = '0px';
+                img.style.marginRight = '0px';
+            } else {
+                var left_right =  Math.floor((((Math.ceil(width / 197.5) * 197.5) - width) / 2)) + 'px'
+                img.style.marginLeft = left_right;
+                img.style.marginRight = left_right;
+            } 
+        }
+        var top_bottom = Math.floor((((Math.ceil(height / 197.5) * 197.5) - height) / 2))  + 'px'
+        img.style.marginTop = top_bottom;
+        img.style.marginBottom = top_bottom;
     }
 
     setMaxSize() {
@@ -172,8 +197,8 @@ export default class MediaComponent extends React.Component
             maxHeight: this.max_height
         }
         for (var x = 0; x < items.length; x++) {
-            items[x].firstChild.firstChild.style.maxHeight = this.max_height + 'px';
-            items[x].firstChild.firstChild.style.maxWidth = this.max_width + 'px';
+            items[x].firstChild.style.maxHeight = this.max_height + 'px';
+            items[x].firstChild.style.maxWidth = this.max_width + 'px';
         }
         if (this.expanded) {
             this.setItemMargin();
@@ -185,17 +210,33 @@ export default class MediaComponent extends React.Component
         return (
             <div data-id={image.href} 
                  key={image.href} 
-                 className="media-item well">
-                <a className="image ignore" 
-                   href="#"
-                   data-title={image.name} 
-                   data-thumbnail={image.thumbnail.href} 
-                   data-href={image.href}  
-                   onClick={this.handleImageClick.bind(this)}>
-                    <img src={image.thumbnail.href} 
+                 className="media-item image well"
+                 data-title={image.name} 
+                 data-thumbnail={image.thumbnail.href} 
+                 data-href={image.href} 
+                 onClick={this.handleItemClick.bind(this)}>
+                <img src={image.thumbnail.href} 
                          style={this.image_style}
-                         onLoad={this.handleImageLoad.bind(this)}  />
-                </a>
+                         onLoad={this.handleImageLoad.bind(this)} />
+                <div className='media-overlay'>
+                    <div className='media-overlay-wrapper'>
+                        <div className='media-overlay-content'>
+                            <span className='media-name'>{image.name}</span>
+                        </div>
+                        <div className='media-links-button'>
+                            <span className='glyphicon glyphicon-link'></span>
+                            <span className='glyphicon glyphicon-triangle-top'></span>
+                            
+                            <div className='media-links-menu text-left'>
+                                <div className='media-overlay-wrapper'>
+                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' />
+                                </div>
+                                <div className='media-overlay-background'></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className='media-overlay-background'></div>
+                </div>
             </div>
         );
     }
@@ -206,7 +247,7 @@ export default class MediaComponent extends React.Component
                 <h1 className="text-center">{"There's no images here!"}</h1>
                 <p>Upload some images!</p>
                 <p>
-                    <a href="/upload" className="btn btn-success btn-lg" >
+                    <a href="/upload" className="btn btn-success btn-lg">
                         <span className="glyphicon glyphicon-cloud-upload"></span>
                         <span> Upload Images</span>
                     </a>
