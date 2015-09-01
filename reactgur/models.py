@@ -20,6 +20,7 @@ class Media(Model):
     thumbnail_id = Column(Integer, ForeignKey('media.id'))
     thumbnail = relationship('Media', remote_side=[id],
         backref=backref('original', uselist=False))
+    is_public = Column(Boolean, default=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship('User', backref='media')
 
