@@ -84,6 +84,7 @@ class User(Model):
     updated_at = Column(DateTime)
     verified = Column(Boolean, default=False)
     enabled = Column(Boolean, default=False)
+    is_admin = Column(Boolean, default=False)
     token = Column(String(255))
 
     def __init__(self, username, email, password):
