@@ -83,7 +83,6 @@ path_change(document.location.pathname);
 ee.addListener('update_app_data', (data) => {
     window.APP_DATA = data;
     ee.emit('app_data', data);
-    ee.emit('render');
 })
 
 ee.addListener('route:/logout', () => {

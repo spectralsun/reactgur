@@ -129,14 +129,15 @@ export default class MediaComponent extends React.Component
         var overlay = null;
         var item = null;
         while (!item) {
-            if (node.className.indexOf('media-overlay') !== -1)
+            if (node.className.indexOf('media-api-button') !== -1)
+                return;
+            if (node.className.indexOf('media-overlay-bottom') !== -1)
                 overlay = node;
             if (node.className.indexOf('media-item') !== -1)
                 item = node;
             node = node.parentNode;
         }
-        if (overlay && (item.className.indexOf('expanded') !== -1 ||
-                        overlay.className.indexOf('media-overlay-top') !== -1)) 
+        if (overlay && item.className.indexOf('expanded') !== -1) 
             return; 
         var clicked = {
             id: item.dataset.id,
@@ -280,7 +281,7 @@ export default class MediaComponent extends React.Component
                             
                             <div className='media-links-menu text-left'>
                                 <div className='media-overlay-wrapper'>
-                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' />
+                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' readOnly />
                                 </div>
                                 <div className='media-overlay-background'></div>
                             </div>
