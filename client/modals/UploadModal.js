@@ -64,7 +64,7 @@ class FileUpload
         ajax.upload.addEventListener('load', this.createEmitter('load'), false);
         ajax.upload.addEventListener('error', this.createEmitter('error'), false);
         ajax.upload.addEventListener('abort', this.createEmitter('abort'), false);
-        ajax.open('post', '/upload', true);
+        ajax.open('post', '/api/v1/media', true);
         ajax.setRequestHeader('Content-Type', 'multipart\/form-data; boundary=' + boundary);
         ajax.setRequestHeader('X-CSRFToken', document.querySelector('meta[name="csrf-token"]').content);
         ajax.sendAsBinary('--' + boundary + '\r\n' + this.content + '\r\n--' + boundary + '--\r\n')
@@ -130,7 +130,7 @@ export default class UploadModal extends ModalComponent
     }
 
     checkUploadPrivilege() {
-        if (APP_CONF.upload_login_required && !APP_DATA.authed) 
+        if (APP_CONF.upload_requires_login && !APP_DATA.authed) 
             return;
         this.open();
     }

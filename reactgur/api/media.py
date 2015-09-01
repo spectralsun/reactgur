@@ -3,16 +3,20 @@ import os
 import magic
 import bleach
 from flask import Blueprint, request, current_app
+from flask.ext.login import current_user
 
 from reactgur.models import Media
 from reactgur.util import jsonify, generate_filename, convert_to_jpeg, \
     get_image_size, image_extensions, generate_thumbnail
 
 
-media_bp = Blueprint('media', __name__)
+media_api = Blueprint('media_api', __name__)
 
-@media_bp.route('/upload', methods=['POST'])
-def upload():
+@media_api.route('/api/v1/media', methods=['POST'])
+def post_media():
+    if current_app.config['UPLOAD_REQUIRES_LOGIN'] \
+       and not current_user.is_authenticated:
+       return jsonify(dict(error=['Login required.']), _status=400)
     if not request.files:
         return []
     uploaded = []
@@ -38,7 +42,6 @@ def upload():
         # Save the image to a secure random filename
         filename = generate_filename(upload_path, image_extensions[mime])
         file_path = os.path.join(upload_path, filename)
-        print file_path
         upload.save(file_path)
        
         # Convert image to jpeg if bmp
@@ -64,5 +67,17 @@ def upload():
                       thumbnail=thumbnail)
         media.save()
         uploaded.append(media)
-    print uploaded
     return jsonify(uploaded)
+
+@media_api.route('/api/v1/media', methods=['GET'])
+def get_media():
+    last = Media.get_by_filename(request.args['after'][1:])
+    return jsonify(Media.get_latest_after(last))
+
+@media_api.route('/api/v1/media', methods=['DELETE'])
+def delete_media():
+    pass
+
+@media_api.route('/api/v1/media', methods=['PUT'])
+def put_media():
+    pass

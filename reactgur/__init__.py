@@ -11,8 +11,8 @@ from flask.json import dumps
 from flask_wtf import CsrfProtect
 
 from reactgur import database
-from reactgur.blueprints import user_bp, media_bp
-from reactgur.blueprints.user import login_manager
+from reactgur.api import user_api, media_api
+from reactgur.api.user import login_manager
 from reactgur.models import Media
 from reactgur.util import ExtensibleJSONEncoder
 
@@ -24,8 +24,8 @@ try:
 except: 
     app.config.from_object('configdist')
 
-app.register_blueprint(media_bp)
-app.register_blueprint(user_bp)
+app.register_blueprint(media_api)
+app.register_blueprint(user_api)
 
 csrf = CsrfProtect(app)
 
@@ -33,7 +33,6 @@ login_manager.init_app(app)
 
 # Configure paths
 root = os.path.dirname(os.path.abspath(__file__))
-print root
 app.config['UPLOAD_PATH'] = upload_path = os.path.join(root, '../uploads')
 theme_path = os.path.join(root, 'static/theme') 
 theme_files = tuple([f for f in os.listdir(theme_path) \
@@ -71,7 +70,7 @@ def index(filename=None):
     context['app_name'] = app.config['APP_NAME']
     context['app_conf'] = dumps(dict(
         request_registration=app.config['REQUEST_REGISTRATION'],
-        upload_login_required=app.config['UPLOAD_LOGIN_REQUIRED']
+        upload_requires_login=app.config['UPLOAD_REQUIRES_LOGIN']
     ))
     app_data = dict(authed=current_user.is_authenticated())
     if current_user.is_authenticated():

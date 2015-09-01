@@ -30,7 +30,7 @@ class Reactgur extends React.Component
     render() {
         return (
             <div id="app">
-                <NavbarComponent ref="NavbarComponent"/>
+                <NavbarComponent ref="navbarComponent"/>
                 <PagesComponent ref="pageComponent"/>
                 <LoginModal refs="loginModal"/>
                 <MediaModal refs="mediaModal"/>
@@ -88,11 +88,9 @@ ee.addListener('update_app_data', (data) => {
 
 ee.addListener('route:/logout', () => {
     xhttp({
-        url: '/logout',
+        url: '/api/v1/logout',
         method: 'post',
-        headers: {
-            'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content
-        }
+        headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content }
     })
     .then((data) => {
         ee.emit('update_app_data', data);

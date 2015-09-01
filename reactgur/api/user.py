@@ -7,14 +7,14 @@ from reactgur.models import User
 from reactgur.util import jsonify
 
 
-user_bp = Blueprint('user_bp', __name__)
+user_api = Blueprint('user_api', __name__)
 
 login_manager = LoginManager()
 @login_manager.user_loader
 def load_user(userid):
     return User.get(userid)
 
-@user_bp.route('/register', methods=['POST'])
+@user_api.route('/api/v1/register', methods=['POST'])
 def register():
     if current_app.config['REQUEST_REGISTRATION']:
         form = TokenRegistrationForm()
@@ -29,7 +29,7 @@ def register():
     form.errors['_status_code'] = 400 
     return jsonify(**form.errors)
 
-@user_bp.route('/login', methods=['POST'])
+@user_api.route('/api/v1/login', methods=['POST'])
 def login():
     form = LoginForm()
     if form.validate_on_submit():
@@ -47,7 +47,7 @@ def login():
     form.errors['_status_code'] = 400 
     return jsonify(**form.errors)
 
-@user_bp.route('/logout', methods=['POST'])
+@user_api.route('/api/v1/logout', methods=['POST'])
 def logout():
     logout_user()
     return jsonify(authed=False)

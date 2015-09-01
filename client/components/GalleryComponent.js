@@ -8,8 +8,10 @@ export default class MediaComponent extends React.Component
 {
     constructor(props) {
         super(props);
-        this.state = {images: 0}
+        this.state = {images: []}
         ee.addListener('page_wrapper', this.handlePageWrapper.bind(this));
+        ee.addListener('resize', this.handleWindowResize.bind(this));
+        ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
     }
 
     componentWillMount() {
@@ -18,7 +20,22 @@ export default class MediaComponent extends React.Component
 
     componentDidMount() {
         this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
-        if (this.iso)
+        this.createIsoContainer();      
+    }
+
+    componentDidUpdate() {
+        this.createIsoContainer();
+        var appended = [];
+        var items = this.refs.isoContainer.getDOMNode().children;
+        for (var x = 0; x < items.length; x++) {
+            if (items[x].style.top === "")
+                appended.push(items[x]);
+        }
+        this.iso.appended(appended);
+    }
+
+    createIsoContainer() {
+        if (this.iso || !this.refs.isoContainer)
             return;
         this.iso = new Isotope(this.refs.isoContainer.getDOMNode(), {
            layoutMode: 'packery',
@@ -29,20 +46,7 @@ export default class MediaComponent extends React.Component
            }
         });
         this.iso.on('layoutComplete', this.handleLayoutComplete.bind(this));
-        this.iso.layout();
-
-        ee.addListener('resize', this.handleWindowResize.bind(this));
-        ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
-    }
-
-    componentDidUpdate() {
-        var appended = [];
-        var items = this.refs.isoContainer.getDOMNode().children;
-        for (var x = 0; x < items.length; x++) {
-            if (items[x].style.top === "")
-                appended.push(items[x]);
-        }
-        this.iso.appended(appended);
+        this.iso.layout(); 
     }
 
     errorMoreImages(data) {
@@ -96,8 +100,7 @@ export default class MediaComponent extends React.Component
     }
     
     handleMoreImages(data) {
-        this.props.images.push.apply(this.props.images, data);
-        this.setState({images: this.props.images.length});
+        this.setState({images: this.state.images.concat(data)});
         this.loadLock = false;
     }
 
@@ -124,12 +127,10 @@ export default class MediaComponent extends React.Component
             return;
         this.loadLock = true;
         xhttp({
-            url: '/load',
-            method: 'post',
+            url: '/api/v1/media',
+            method: 'get',
             headers: { 'X-CSRFToken': this.csrfToken },
-            data: {
-                after: this.props.images[this.props.images.length - 1].href
-            }
+            params: { after: this.state.images[this.state.images.length - 1].href }
         })
         .then(this.handleMoreImages.bind(this))
         .catch(this.errorMoreImages.bind(this));
@@ -194,7 +195,7 @@ export default class MediaComponent extends React.Component
     }
 
     render() {
-        return this.props.images.length == 0 ? (
+        return this.state.images.length == 0 ? (
             <div className="jumbotron text-center">
                 <h1 className="text-center">{"There's no images here!"}</h1>
                 <p>Upload some images!</p>
@@ -209,7 +210,7 @@ export default class MediaComponent extends React.Component
             <div ref="isoContainer" 
                  className="panel media-component text-center"
                  onScroll={this.handleScroll.bind(this)}>
-                {this.props.images.map(this.renderImage.bind(this))}
+                {this.state.images.map(this.renderImage.bind(this))}
             </div>
         );
     }

@@ -6,6 +6,7 @@ export default class RegistrationForm extends FormComponent
 {
     constructor(props) {
         super(props)
+        this.url = '/api/v1/register';
         this.open_registration = [
             {name:'email', label:'Email Address', placeholder: 'Enter email address'},
             {name:'username', label:'Username', placeholder: 'Enter username'},
