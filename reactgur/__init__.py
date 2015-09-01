@@ -35,8 +35,11 @@ login_manager.init_app(app)
 root = os.path.dirname(os.path.abspath(__file__))
 app.config['UPLOAD_PATH'] = upload_path = os.path.join(root, '../uploads')
 theme_path = os.path.join(root, 'static/theme') 
-theme_files = tuple([f for f in os.listdir(theme_path) \
-                     if os.path.isfile(os.path.join(theme_path, f))])
+try:
+    theme_files = tuple([f for f in os.listdir(theme_path) \
+                         if os.path.isfile(os.path.join(theme_path, f))])
+except:
+    theme_files = tuple()
 
 assets = Environment(app)
 assets.load_path = [
