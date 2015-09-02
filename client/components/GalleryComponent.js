@@ -1,13 +1,14 @@
 import React from 'react';
-import {Input, DropdownButton, MenuItem} from 'react-bootstrap';
 import xhttp from 'xhttp';
 
 import ConfirmModal from './../modals/ConfirmModal.js';
 
+import MediaComponent from './../components/MediaComponent.js';
+
 import ee from '../Emitter.js';
 import Scroll from '../Scroll.js';
 
-export default class MediaComponent extends React.Component 
+export default class GalleryComponent extends React.Component 
 {
     constructor(props) {
         super(props);
@@ -20,7 +21,7 @@ export default class MediaComponent extends React.Component
     }
 
     componentWillMount() {
-        this.setMaxSize(); 
+        this.calculateMaxSize(); 
     }
 
     componentDidMount() {
@@ -44,6 +45,68 @@ export default class MediaComponent extends React.Component
         this.appendMedia = false;
     }
 
+    calculateExpandedPosition() {
+        var item_column = ((parseInt(this.expanded.item.style.left) - 74) + 198) / 198;
+        if (item_column >= (this.columns - 2)) {
+            var offset = 0;
+            if (item_column < this.columns) {
+                offset = this.columns - item_column;
+                while ((this.expanded_width + (this.expanded_margin_lr * 2) + 18) > (198 * (this.columns - offset))) {
+                    offset --;
+                }
+            }
+            this.expanded.item.style.right = (74 + (198 * (offset))) + 'px';
+            this.expanded.item.style.left = '';
+        } 
+    }
+
+    calculateExpandedSize() {
+        if (!this.expanded) return;
+        var img = this.expanded.img;
+        var item = this.expanded.item;
+        var width = parseInt(item.dataset.width); 
+        var height = parseInt(item.dataset.height);
+        if (width > this.max_width) {
+            height = (this.max_width * height)/width;
+            width = this.max_width;
+        }
+        if (height > this.max_height) {
+            width = (this.max_height * width)/height;
+            height = this.max_height;
+        }
+        var total_width = width + 18;
+        var total_height = height + 18;
+        var margin_lr = 0;
+        var margin_tb = 0;
+        if (width < 380 && height < 380) 
+            margin_tb = ((380 - height) / 2); 
+        else 
+            margin_tb = Math.floor((((Math.ceil(total_height / 198) * 198) - total_height) / 2));
+        
+        if (item.dataset.width >= 380) 
+            margin_lr = Math.floor((((Math.ceil(total_width / 198) * 198) - total_width) / 2));
+        
+        if (width == this.max_width) 
+            margin_tb = 4;
+        this.setExpandedSize(margin_tb, margin_lr, height, width)
+        // Save for preparing expanded item position
+        this.expanded_margin_lr = margin_lr;
+        this.expanded_width = width;
+    }
+
+    calculateMaxSize() {
+        this.mobile = false;
+        this.columns = 5;
+        if (window.innerWidth <= 1200)
+            this.columns = 4;
+        else if (window.innerWidth <= 992)
+            this.columns = 3;
+        else if (window.innerWidth <= 768)
+             this.mobile = true;
+        this.max_width = (this.columns * 192) + 4;
+        this.max_height = window.innerHeight - 130;
+    }
+
     createIsoContainer() {
         if (this.iso || !this.refs.isoContainer)
             return;
@@ -52,6 +115,13 @@ export default class MediaComponent extends React.Component
         });
         this.iso.on('layoutComplete', this.handleLayoutComplete.bind(this));
         this.iso.layout(); 
+    }
+
+    closeExpanded() {
+        this.expanded.item.className = 'media-item well';
+        this.expanded.img.src = this.expanded.item.dataset.thumbnail;
+        this.setExpandedSize(0, 0, 180, 180);
+        this.expanded.item.style.right = '';
     }
 
     handleAppData(data) {
@@ -127,59 +197,39 @@ export default class MediaComponent extends React.Component
 
     handleItemClick(e) {
         var node = e.target;
-        var overlay = null;
+        var bottom_overlay = null;
         var item = null;
         while (!item) {
             if (node.className.indexOf('media-api-button') !== -1)
                 return;
             if (node.className.indexOf('media-overlay-bottom') !== -1)
-                overlay = node;
+                bottom_overlay = node;
             if (node.className.indexOf('media-item') !== -1)
                 item = node;
             node = node.parentNode;
         }
-        if (overlay && item.className.indexOf('expanded') !== -1) 
+        if (bottom_overlay && item.className.indexOf('expanded') !== -1) 
             return; 
-        var clicked = {
-            id: item.dataset.id,
-            item: item,
-            img: item.firstChild
-        }
+        
         if (this.expanded) {
-            this.expanded.item.className = 'media-item well';
-            this.expanded.img.src = this.expanded.item.dataset.thumbnail;
-            this.expanded.img.style.marginLeft = '0px';
-            this.expanded.img.style.marginRight = '0px';
-            this.expanded.img.style.marginTop = '0px';
-            this.expanded.img.style.marginBottom = '0px';
-            this.expanded.img.style.height = '180px';
-            this.expanded.img.style.width = '180px';
-            this.expanded.item.style.right = '';
-            if (this.expanded.id === clicked.id) {
+            this.closeExpanded();
+            if (this.expanded.id === item.dataset.id) {
                 this.scrollTo = this.expanded;
                 this.shrunkTo = this.expanded.img.src;
                 this.expanded = null;
                 return;
             }
         }
-        this.expanded = clicked;
-        clicked.item.className = 'media-item well expanded';
-        clicked.img.src = clicked.item.dataset.href;
-        this.setExpandedSize(); 
-        var item_column = ((parseInt(item.style.left) - 74) + 198) / 198;
-        if (item_column >= (this.columns - 2)) {
-            var offset = 0;
-            if (item_column < this.columns) {
-                offset = this.columns - item_column;
-                while ((this.expanded_width + (this.expanded_margin_lr * 2) + 18) > (198 * (this.columns - offset))) {
-                    offset --;
-                }
-            }
-            item.style.right = (74 + (198 * (offset))) + 'px';
-            item.style.left = '';
-        } 
+        this.expanded = this.scrollTo = {
+            id: item.dataset.id,
+            item: item,
+            img: item.firstChild
+        }
+        this.expanded.item.className = 'media-item well expanded';
+        this.expanded.img.src = this.expanded.item.dataset.href;
+        this.calculateExpandedSize(); 
+        this.calculateExpandedPosition(); 
         this.iso.layout();
-        this.scrollTo = clicked;
     }
 
     handleImageLoad(e) {
@@ -203,7 +253,7 @@ export default class MediaComponent extends React.Component
     }
 
     handleWindowResize() {
-        this.setMaxSize();
+        this.calculateMaxSize();
         this.setExpandedSize();
         this.iso.layout();
     }
@@ -226,122 +276,13 @@ export default class MediaComponent extends React.Component
         this.setState({images: [].concat(media, this.state.images)});
     }
 
-    setMaxSize() {
-        this.mobile = false;
-        this.columns = 5;
-        if (window.innerWidth <= 1200)
-            this.columns = 4;
-        else if (window.innerWidth <= 992)
-            this.columns = 3;
-        else if (window.innerWidth <= 768)
-             this.mobile = true;
-        this.max_width = (this.columns * 192) + 4;
-        this.max_height = window.innerHeight - 130;
-    }
-
-    setExpandedSize() {
-        if (!this.expanded) return;
-        var img = this.expanded.img;
-        var item = this.expanded.item;
-        var width = parseInt(item.dataset.width); 
-        var height = parseInt(item.dataset.height);
-        if (width > this.max_width) {
-            height = (this.max_width * height)/width;
-            width = this.max_width;
-        }
-        if (height > this.max_height) {
-            width = (this.max_height * width)/height;
-            height = this.max_height;
-        }
-        var total_width = width + 18;
-        var total_height = height + 18;
-        var margin_lr = 0;
-        var margin_tb = 0;
-        if (width < 380 && height < 380) 
-            margin_tb = ((380 - height) / 2); 
-        else 
-            margin_tb = Math.floor((((Math.ceil(total_height / 198) * 198) - total_height) / 2));
-        
-        if (item.dataset.width >= 380) {
-            margin_lr = Math.floor((((Math.ceil(total_width / 198) * 198) - total_width) / 2));
-        }
-        if (width == this.max_width) 
-            margin_tb = 4;
-        img.style.marginTop = margin_tb + 'px';
-        img.style.marginBottom = margin_tb + 'px';
-        img.style.marginLeft = margin_lr + 'px';
-        img.style.marginRight = margin_lr + 'px';
-        img.style.height = height + 'px';
-        img.style.width = width + 'px';
-        this.expanded_margin_tb = margin_tb;
-        this.expanded_margin_lr = margin_lr;
-        this.expanded_width = width;
-        this.expanded_height = height;
-    }
-
-    renderImage(image) {
-        return (
-            <div data-id={image.href} 
-                 key={image.href} 
-                 className="media-item image well"
-                 data-title={image.name}
-                 data-height={image.height}
-                 data-width={image.width} 
-                 data-thumbnail={image.thumbnail.href} 
-                 data-href={image.href} 
-                 onClick={this.handleItemClick.bind(this)}>
-                <img src={image.thumbnail.href} 
-                     onLoad={this.handleImageLoad.bind(this)} />
-                <div className='media-overlay media-overlay-bottom'>
-                    <div className='media-overlay-wrapper'>
-                        <div className='media-overlay-content'>
-                            <span className='media-name'>{image.name}</span>
-                        </div>
-                        <DropdownButton className='media-links-button' 
-                                        noCaret
-                                        title={(<span>
-                                                    <span className='glyphicon glyphicon-link'></span>
-                                                    <span className='glyphicon glyphicon-triangle-top'></span>
-                                                </span>)}
-                                        ref={ (dd) => {
-                                            var ddNode = React.findDOMNode(dd);
-                                            var parent = ddNode.parentNode;
-                                            let keep_menu_open = (e) => {
-                                                var node = e.target;
-                                                while (node.className.indexOf('btn-group') == -1) {
-                                                    if (node.className.indexOf('dropdown-menu') !== -1) {
-                                                        return;
-                                                    }
-                                                    node = node.parentNode;
-                                                }
-                                                parent.className.indexOf('open-link-menu') >= 0 ?
-                                                    parent.classList.remove('open-link-menu') :
-                                                    parent.classList.add('open-link-menu');
-                                            }
-                                            ddNode.addEventListener('click', keep_menu_open);
-                                            ddNode.addEventListener('contextmenu', keep_menu_open);
-                                        }}>
-                            <MenuItem className='media-links-menu text-left' disabled>
-                                <div className='media-overlay-wrapper'>
-                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' readOnly onClick={(e) => e.target.select()}/>
-                                </div>
-                                <div className='media-overlay-background'></div>
-                            </MenuItem>
-                        </DropdownButton>
-                    </div>
-                    <div className='media-overlay-background'></div>
-                </div>
-                {this.state.user && (this.state.user === image.user || this.state.is_admin) ? (
-                    <div className='media-overlay media-overlay-top'>
-                        <div className='media-delete-button media-api-button'
-                             onClick={this.handleDeleteClick.bind(this)}>
-                            <span className='glyphicon glyphicon-remove'></span>
-                            <div className='media-overlay-background'></div>
-                        </div>
-                    </div>
-                ) : null}
-            </div>
-        );
+    setExpandedSize(margin_tb, margin_lr, height, width) {
+        this.expanded.img.style.marginTop = margin_tb + 'px';
+        this.expanded.img.style.marginBottom = margin_tb + 'px';
+        this.expanded.img.style.marginLeft = margin_lr + 'px';
+        this.expanded.img.style.marginRight = margin_lr + 'px';
+        this.expanded.img.style.height = height + 'px';
+        this.expanded.img.style.width = width + 'px';
     }
 
     render() {
@@ -361,7 +302,16 @@ export default class MediaComponent extends React.Component
                 <div ref="isoContainer" 
                      className="panel media-component text-center"
                      onScroll={this.handleScroll.bind(this)}>
-                    {this.state.images.map(this.renderImage.bind(this))}
+                    {this.state.images.map((image) => {
+                        return (
+                            <MediaComponent image={image}
+                                            onClick={this.handleItemClick.bind(this)}
+                                            onImageLoad={this.handleImageLoad.bind(this)} 
+                                            onDeleteClick={this.handleDeleteClick.bind(this)}
+                                            currentUser={this.state.user}
+                                            currentUserIsAdmin={this.state.is_admin} />
+                        );
+                    })}
                 </div>
                 <ConfirmModal ref='confirmModal' />
             </div>
