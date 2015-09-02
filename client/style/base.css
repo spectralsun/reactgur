@@ -51,6 +51,10 @@ a:active {
     min-width: 388px;
     z-index: 1;
 }
+.media-item img {
+    height: 180px;
+    width: 180px;
+}
 .media-overlay-top {
     position: absolute;
     top: 4px;
