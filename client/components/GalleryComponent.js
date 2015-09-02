@@ -1,5 +1,5 @@
 import React from 'react';
-import {Input} from 'react-bootstrap';
+import {Input, DropdownButton, MenuItem} from 'react-bootstrap';
 import xhttp from 'xhttp';
 
 import ConfirmModal from './../modals/ConfirmModal.js';
@@ -297,18 +297,37 @@ export default class MediaComponent extends React.Component
                         <div className='media-overlay-content'>
                             <span className='media-name'>{image.name}</span>
                         </div>
-                        <div className='media-links-button'>
-                            <span className='glyphicon glyphicon-link'></span>
-                            <span className='glyphicon glyphicon-triangle-top'></span>
-                            
-                            <div className='media-links-menu text-left'>
+                        <DropdownButton className='media-links-button' 
+                                        noCaret
+                                        title={(<span>
+                                                    <span className='glyphicon glyphicon-link'></span>
+                                                    <span className='glyphicon glyphicon-triangle-top'></span>
+                                                </span>)}
+                                        ref={ (dd) => {
+                                            var ddNode = React.findDOMNode(dd);
+                                            var parent = ddNode.parentNode;
+                                            let keep_menu_open = (e) => {
+                                                var node = e.target;
+                                                while (node.className.indexOf('btn-group') == -1) {
+                                                    if (node.className.indexOf('dropdown-menu') !== -1) {
+                                                        return;
+                                                    }
+                                                    node = node.parentNode;
+                                                }
+                                                parent.className.indexOf('open-link-menu') >= 0 ?
+                                                    parent.classList.remove('open-link-menu') :
+                                                    parent.classList.add('open-link-menu');
+                                            }
+                                            ddNode.addEventListener('click', keep_menu_open);
+                                            ddNode.addEventListener('contextmenu', keep_menu_open);
+                                        }}>
+                            <MenuItem className='media-links-menu text-left' disabled>
                                 <div className='media-overlay-wrapper'>
-                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' readOnly />
+                                    <Input type='text' value={APP_CONF.external_url + image.href} label='Direct Link' readOnly onClick={(e) => e.target.select()}/>
                                 </div>
                                 <div className='media-overlay-background'></div>
-                            </div>
-                        </div>
-                        
+                            </MenuItem>
+                        </DropdownButton>
                     </div>
                     <div className='media-overlay-background'></div>
                 </div>

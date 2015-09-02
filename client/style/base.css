@@ -133,16 +133,32 @@ a:active {
 .expanded .media-overlay-background {
     opacity: 0.9;
 }
-.media-links-button {
+.media-links-button.dropdown {
     position: absolute;
     right: 0;
     top: 0;
     height: 30px;
-    padding: 7px 20px;
     display: none;
 }
-.expanded .media-links-button {
+.expanded .media-links-button.dropdown {
     display: block;
+}
+.media-links-button.dropdown.btn-group > .media-links-button.btn {
+    padding: 5px 20px;
+    background: none;
+    border: none;
+}
+.media-links-button .caret {
+    display: none;
+}
+.media-links-button .dropdown-menu {
+    top: auto;
+    left: auto;
+    right: 0;
+    bottom: 100%;
+    background: none;
+    border: none;
+    box-shadow: none;
 }
 .media-links-button .glyphicon-link {
     font-size: 27px;
@@ -150,23 +166,27 @@ a:active {
 }
 .media-links-button .glyphicon-triangle-top {
     position: absolute;
-    top: 10px;
+    top: 17px;
     right: 7px;
     font-size: 9px;
 }
-.media-links-menu {
-    position: absolute;
-    bottom: 100%;
-    right: 0;
-    padding: 7px 9px 0;
+.media-links-button ul.dropdown-menu {
     display: none;
-    width: 290px;
+}
+.open-link-menu .media-links-button ul.dropdown-menu {
+    display: block;
+}
+.media-links-button ul li.disabled a {
+    color: #fff;
+    cursor: default;
+    padding: 0;
+}
+.media-links-menu {
+    padding: 7px 9px 0;
+    width: 300px;
 }
 .media-links-menu input {
     font-size: 13px;
-}
-.media-links-button:hover .media-links-menu {
-    display: block;
 }
 .navbar .navbar-brand {
     font-size: 25px;
