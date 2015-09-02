@@ -45,7 +45,6 @@ a:active {
     padding: 4px;
     display: inline-block;
     cursor: pointer;
-    transition-duration: 0s!important;
 }
 .media-item.expanded {
     min-height: 388px;
