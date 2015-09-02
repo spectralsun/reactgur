@@ -4,6 +4,17 @@ a:focus,
 a:active {
     outline: none!important;
 }
+#forkme {
+    position: fixed;
+    top: 50px;
+    left: 0;
+    display: inline-block;
+    z-index: 10000;
+}
+#forkme img {
+    height: 149px;
+    width: 149px;
+}
 #page_wrapper {
     margin-top: 51px;
     overflow: auto;
@@ -34,6 +45,7 @@ a:active {
     padding: 4px;
     display: inline-block;
     cursor: pointer;
+    transition-duration: 0s!important;
 }
 .media-item.expanded {
     min-height: 388px;

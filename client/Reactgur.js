@@ -54,10 +54,13 @@ const no_push_state = [
     '/logout'
 ];
 document.body.addEventListener('click', (e) => {
-    // Bubble up the chain to check for a link
     var link = e.target;
+    // Bubble up the chain to check for a link
     while (!link.pathname && link.parentNode)
         link = link.parentNode;
+
+    if (link.className.indexOf('allow') != -1)
+        return;
 
     // If there is a link, prevent the page change
     if (link.pathname)

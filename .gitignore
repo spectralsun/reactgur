@@ -2,5 +2,8 @@ config.py
 sqlite.db
 *.pyc
 uploads
-reactgur/static
+reactgur/static/fonts
+reactgur/static/theme
+reactgur/static/webassets-external
+reactgur/static/bundle.js
 node_modules
