@@ -59,7 +59,7 @@ document.body.addEventListener('click', (e) => {
     while (!link.pathname && link.parentNode)
         link = link.parentNode;
 
-    if (link.className.indexOf('allow') != -1)
+    if (link.className && link.className.indexOf('allow') != -1)
         return;
 
     // If there is a link, prevent the page change
