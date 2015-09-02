@@ -38,6 +38,7 @@ a:active {
 .media-item.expanded {
     min-height: 388px;
     min-width: 388px;
+    z-index: 1;
 }
 .media-overlay-top {
     position: absolute;

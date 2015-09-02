@@ -257,8 +257,8 @@ export default class MediaComponent extends React.Component
         var total_height = height + 18;
         var margin_lr = 0;
         var margin_tb = 0;
-        if (item.dataset.width < 380 && item.dataset.height < 380) 
-            margin_tb = ((380 - item.dataset.height) / 2); 
+        if (width < 380 && height < 380) 
+            margin_tb = ((380 - height) / 2); 
         else 
             margin_tb = Math.floor((((Math.ceil(total_height / 198) * 198) - total_height) / 2));
         
