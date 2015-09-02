@@ -68,7 +68,7 @@ def shutdown_session(response):
 def index(filename=None):
     # Check if its an image to render
     if filename and os.path.exists(os.path.join(upload_path, filename)):
-        return send_from_directory(upload_path, filename, as_attachment=True)
+        return send_from_directory(upload_path, filename)
     context = dict(images=dumps(Media.get_latest()))
     context['app_name'] = app.config['APP_NAME']
     context['app_conf'] = dumps(dict(
