@@ -15,6 +15,12 @@ export default class FormComponent extends React.Component
         this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     }
 
+    checkErrorAlert(name) {
+        return this.state.errors && this.state.errors[name] ? (
+            <Alert bsStyle='danger'>{this.state.errors[name]}</Alert>
+        ) : null;
+    }
+    
     getFormData() {
         var data = {};
         for(var x = 0; x < this.fields.length; x++) {
@@ -27,11 +33,18 @@ export default class FormComponent extends React.Component
         return data;
     }
 
-    checkErrorAlert(name) {
-        return this.state.errors && this.state.errors[name] ? (
-            <Alert bsStyle='danger'>{this.state.errors[name]}</Alert>
-        ) : null;
+    handleSuccess(data) { this.ee.emit('success', data); }
+
+    handleFail(data) {
+        if (data) 
+            this.setState({ errors: data });
+        this.ee.emit('fail', data);
     }
+
+    handleKeyDown(e) {
+        if (e.keyCode == 13)
+            this.submit();
+    } 
 
     submit() {
         this.setState({ errors: null });
@@ -43,22 +56,9 @@ export default class FormComponent extends React.Component
             headers: { 'X-CSRFToken': this.csrfToken },
             data: data
         })
-        .then(this.onSuccess.bind(this))
-        .catch(this.onFail.bind(this));
+        .then(this.handleSuccess.bind(this))
+        .catch(this.handleFail.bind(this));
     }
-
-    onSuccess(data) { this.ee.emit('success', data); }
-
-    onFail(data) {
-        if (data) 
-            this.setState({ errors: data });
-        this.ee.emit('fail', data);
-    }
-
-    onKeyDown(e) {
-        if (e.keyCode == 13)
-            this.submit();
-    } 
 
     render() {
         var fields = [];
@@ -72,8 +72,9 @@ export default class FormComponent extends React.Component
                                placeholder={field.placeholder} 
                                label={field.label} 
                                name={field.name} 
-                               ref={field.name} 
-                               onKeyDown={this.onKeyDown.bind(this)} />
+                               ref={field.name}
+                               disabled={!!field.disabled} 
+                               onKeyDown={this.handleKeyDown.bind(this)} />
                         {this.checkErrorAlert(field.name)}
                     </div>
                 );
