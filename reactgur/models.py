@@ -108,9 +108,7 @@ class User(Model):
         self.username = username.lower()
         self.register_ip_address = ip_address
         self.email = email.lower()
-        self.password = generate_password_hash(password=password,
-                                               method='pbkdf2:sha512',
-                                               salt_length=128)
+        self.set_password(password)
 
     def check_password(self, password):
         """Check a user's password (includes salt)"""
@@ -143,6 +141,11 @@ class User(Model):
     @classmethod
     def get_by_email(cls, email):
         return cls.query.filter(cls.email == email).first()
+
+    def set_password(self, password):
+        self.password = generate_password_hash(password=password,
+                                               method='pbkdf2:sha512',
+                                               salt_length=128)
 
     def to_json(self):
         return dict(
