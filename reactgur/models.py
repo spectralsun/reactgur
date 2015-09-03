@@ -21,6 +21,7 @@ class Media(Model):
     thumbnail_id = Column(Integer, ForeignKey('media.id'))
     thumbnail = relationship('Media', remote_side=[id],
         backref=backref('original', uselist=False))
+    upload_ip_address = Column(String(64))
     is_public = Column(Boolean, default=True)
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship('User', backref='media')
@@ -66,6 +67,7 @@ class UserRegistrationRequest(Model):
     __tablename__ = 'user_registration_request'
     id = Column(Integer, primary_key=True)
     email = Column(String(255), unique=True)
+    ip_address = Column(String(255))
     granted = Column(Boolean, default=False)
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     token = Column(String(255))
@@ -99,6 +101,7 @@ class User(Model):
     verified = Column(Boolean, default=False)
     enabled = Column(Boolean, default=False)
     is_admin = Column(Boolean, default=False)
+    register_ip_address = Column(String(64))
     token = Column(String(255))
 
     def __init__(self, username, ip_address, email, password):
