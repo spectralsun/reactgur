@@ -85,11 +85,11 @@ def random_string(length=16):
     pool = range(48, 57) + range(65, 90) + range(97, 122)
     return ''.join(chr(random.choice(pool)) for _ in range(length))
 
-def generate_filename(basepath, extension):
+def generate_filename(basepath, extension, length=8):
     """Generate an unused filename"""
     exists = True
     while exists:
-        filename = secure_filename(random_string() + extension)
+        filename = secure_filename(random_string(length) + extension)
         path = os.path.join(basepath, filename)
         exists = os.path.exists(path)
     return filename
