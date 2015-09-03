@@ -27,7 +27,10 @@ export default class RegisterModal extends ModalComponent
 
     handleRegistrationSuccess(data) {
         if (data && data.request_received) 
-            ee.emit('alert', {msg: 'Registration request received. You will receive an email when an admin approves your request.'})
+            ee.emit('alert', {
+                msg: 'Registration request received. You will receive an email when an admin approves your request.',
+                style: 'success'
+            })
         else
             ee.emit('update_app_data', data);
         this.close();
