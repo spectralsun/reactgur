@@ -2,7 +2,7 @@ import os
 import random
 
 import simplejson as json
-from flask import request, current_app
+from flask import request, current_app, session, redirect
 from flask.json import dumps
 from PIL import Image, ImageOps, ImageChops
 from werkzeug import secure_filename
@@ -39,6 +39,19 @@ def jsonify(*args, **kwargs):
     return current_app.response_class(dumps(data, indent=indent), 
         status=status,
         mimetype='application/json')    
+
+def api_alert_response(msg, status=200, style='info'):
+    if request.is_xhr:
+        return jsonify(dict(
+            alert=msg,
+            style=style,
+            _status_code=status
+        ))
+    if not 'alerts' in session:
+        session['alerts'] = []
+    session['alerts'].append(dict(msg=msg, style=style))
+    return redirect('/')
+
 
 def convert_to_jpeg():
     filename = generate_filename(upload_path, 

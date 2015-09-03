@@ -1,4 +1,5 @@
 import React from 'react';
+import {Alert} from 'react-bootstrap';
 
 import HomePage from '../pages/HomePage.js';
 
@@ -9,7 +10,9 @@ export default class PagesComponent extends React.Component
     constructor(props) {
         super(props);
         this.last_path = '/';
-        ee.addListener('modal_close', this.onModalClose.bind(this)); 
+        this.state = {alerts: APP_DATA.alerts}
+        ee.addListener('alert', this.handleAlert.bind(this));
+        ee.addListener('modal_close', this.handleModalClose.bind(this)); 
         ee.addListener('resize', this.handleResize.bind(this));
     }
 
@@ -18,8 +21,20 @@ export default class PagesComponent extends React.Component
         ee.emit('page_wrapper', this.refs.page_wrapper);
     }
     
-    onModalClose(modal) {
+    handleModalClose(modal) {
         history.pushState({}, '', this.last_path);
+    }
+
+    handleAlert(alert) {
+        this.setState({alerts: [].concat(this.state.alerts, [alert]) });
+    }
+
+    handleAlertDismiss(e) {
+        var alert = e.target;
+        while (alert.className.indexOf('alert') == -1) 
+            alert = alert.parentNode;
+        this.state.alerts.splice(parseInt(alert.dataset.index), 1)
+        this.setState({alerts: this.state.alerts})
     }
 
     handleResize() {
@@ -34,6 +49,13 @@ export default class PagesComponent extends React.Component
     render() {
         return (
             <div id='page_wrapper' ref='page_wrapper' onScroll={this.handleScroll.bind(this)}>
+                <div className="container">
+                {this.state.alerts.map((alert, k) => {
+                    return (<Alert data-index={k} 
+                                   bsStyle={alert.style}
+                                   onDismiss={this.handleAlertDismiss.bind(this)}>{alert.msg}</Alert>)
+                })}
+                </div>
                 <div id="page" className="container">
                      <HomePage ref="homePage" />
                 </div>

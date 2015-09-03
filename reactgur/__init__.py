@@ -76,7 +76,10 @@ def index(filename=None):
         request_registration=app.config['REQUEST_REGISTRATION'],
         upload_requires_login=app.config['UPLOAD_REQUIRES_LOGIN']
     ))
-    app_data = dict(authed=current_user.is_authenticated())
+    app_data = dict(
+        authed=current_user.is_authenticated(),
+        alerts=session.pop('alerts', [])
+    )
     if current_user.is_authenticated():
         app_data['username'] = current_user.username
         app_data['is_admin'] = current_user.is_admin
