@@ -8,6 +8,11 @@ from reactgur.models import User, UserRegistrationRequest
 
 class RegistrationRequestForm(Form):
     email = EmailField('Email Address', [validators.DataRequired(), validators.Email()])
+    def validate_email(form, field):
+        if User.get_by_email(field.data):
+            raise ValidationError('This email is already registered')
+        if UserRegistrationRequest.get_by_email(field.data):
+            raise ValidationError('Registration already requested for this email.')
     
 class RegistrationForm(Form):
     username = TextField('Username', [validators.Length(min=4, max=25)])
@@ -20,11 +25,11 @@ class RegistrationForm(Form):
     confirm = PasswordField('Repeat Password')
 
     def validate_username(form, field):
-        if User.get_user_by_username(field.data):
+        if User.get_by_username(field.data):
             raise ValidationError('Username already registered.');
 
     def validate_email(form, field):
-        if User.get_user_by_email(field.data):
+        if User.get_by_email(field.data):
             raise ValidationError('Email already registered.')
 
 class TokenRegistrationForm(RegistrationForm):

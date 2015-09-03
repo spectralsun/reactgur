@@ -104,7 +104,7 @@ class User(Model):
     register_ip_address = Column(String(64))
     token = Column(String(255))
 
-    def __init__(self, username, ip_address, email, password):
+    def __init__(self, username, email, password, ip_address):
         self.username = username.lower()
         self.register_ip_address = ip_address
         self.email = email.lower()
@@ -137,11 +137,11 @@ class User(Model):
         return cls.query.filter(or_(cls.username == username_or_email, 
                                     cls.email == username_or_email)).first()
     @classmethod
-    def get_user_by_username(cls, username):
+    def get_by_username(cls, username):
         return cls.query.filter(cls.username == username).first()
 
     @classmethod
-    def get_user_by_email(cls, email):
+    def get_by_email(cls, email):
         return cls.query.filter(cls.email == email).first()
 
     def to_json(self):

@@ -53,7 +53,7 @@ def reply_registration_request(registration_request, action='deny'):
     )
     msg = Message(
         'Registration Request ' + status, 
-        sender=current_app.config['MAIL_USERNAME'],
+        sender=current_app.config['MAIL_DEFAULT_SENDER'],
         recipients=[registration_request.email])
     if context['approved']:
         if registration_request.granted:
