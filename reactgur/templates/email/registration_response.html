@@ -1,0 +1,13 @@
+Dear user,<br/>
+<br/>
+{% if approved %}
+The admin of {{ app_name }} has approved your registration request.<br/>
+<br/>
+To register, please click the following link:<br/>
+<br/>
+<a href="{{ register_link }}">{{ register_link }}</a>
+{% else %}
+Your registration request for {{ app_name }} has been denied.<br/>
+<br/>
+{{ reason }}
+{% endif %}

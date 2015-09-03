@@ -1,0 +1,14 @@
+Dear admin,\n
+\n
+A user has requested to registration.\n
+\n
+Email: {{ request_email }}\n
+IP: {{ request_ip }}\n
+\n
+To approve this request, click here:\n
+\n
+{{ approve_url }}\n
+\n
+To deny this request, click here:\n
+\n
+{{ deny_url }}

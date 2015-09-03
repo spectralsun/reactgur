@@ -1,0 +1,13 @@
+Dear user,\n
+\n
+{% if approved %}
+The admin of {{ site_url }} has approved your registration request.\n
+\n
+To register, please click the following link:\n
+\n
+{{ register_link }}
+{% else %}
+Your registration request for {{ site_url }} has been denied.\n
+\n
+{{ reason }}
+{% endif %}
