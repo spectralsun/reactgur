@@ -254,7 +254,7 @@ export default class GalleryComponent extends React.Component
 
     handleWindowResize() {
         this.calculateMaxSize();
-        this.setExpandedSize();
+        this.calculateExpandedSize();
         this.iso.layout();
     }
 
