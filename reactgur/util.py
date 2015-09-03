@@ -65,15 +65,15 @@ def get_image_size(image):
     im = Image.open(image)
     return (im.size[0], im.size[1])
 
-def generate_thumbnail(file_path, save_path, thumbnail_size=(90, 90)):
+def generate_thumbnail(file_path, save_path, size=(90, 90), length=8):
     im = Image.open(file_path)
     thumbname = generate_filename(save_path, '.jpg')
-    thumb = ImageOps.fit(im, thumbnail_size, Image.ANTIALIAS, (0.5, 0.5))
-    if thumb.size[1] < thumbnail_size[1]:
-        thumb = im.crop((0, 0, thumbnail_size[0], thumbnail_size[1]))
+    thumb = ImageOps.fit(im, size, Image.ANTIALIAS, (0.5, 0.5))
+    if thumb.size[1] < size[1]:
+        thumb = im.crop((0, 0, size[0], size[1]))
 
-        offset_x = max((thumbnail_size[0] - im.size[0]) / 2, 0)
-        offset_y = max((thumbnail_size[1] - im.size[1]) / 2, 0)
+        offset_x = max((size[0] - im.size[0]) / 2, 0)
+        offset_y = max((size[1] - im.size[1]) / 2, 0)
 
         thumb = ImageChops.offset(thumb, offset_x, offset_y)
         thumb.convert('RGB')
