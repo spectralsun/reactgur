@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from flask import current_app
@@ -69,12 +70,20 @@ class UserRegistrationRequest(Model):
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
     token = Column(String(255))
 
-    def __init__(self, email):
+    def __init__(self, email, ip_address):
         self.email = email.lower()
+        self.ip_address = ip_address
+        self.token = os.urandom(32).encode('base-64')[:-2]
 
     @classmethod
     def get_by_email(cls, email):
         return cls.query.filter(cls.email == email).first()
+
+    @classmethod
+    def get_request(cls, email, token):
+        print email, token
+        return cls.query.filter(cls.email == email) \
+                        .filter(cls.token == token).first()
 
 class User(Model):
     """
@@ -92,8 +101,9 @@ class User(Model):
     is_admin = Column(Boolean, default=False)
     token = Column(String(255))
 
-    def __init__(self, username, email, password):
+    def __init__(self, username, ip_address, email, password):
         self.username = username.lower()
+        self.register_ip_address = ip_address
         self.email = email.lower()
         self.password = generate_password_hash(password=password,
                                                method='pbkdf2:sha512',

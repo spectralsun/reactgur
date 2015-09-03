@@ -13,6 +13,7 @@ from flask_wtf import CsrfProtect
 from reactgur import database
 from reactgur.api import user_api, media_api
 from reactgur.api.user import login_manager
+from reactgur.mail import mail_session
 from reactgur.models import Media
 from reactgur.util import ExtensibleJSONEncoder
 
@@ -28,6 +29,8 @@ app.register_blueprint(media_api)
 app.register_blueprint(user_api)
 
 csrf = CsrfProtect(app)
+
+mail_session.init_app(app)
 
 login_manager.init_app(app)
 

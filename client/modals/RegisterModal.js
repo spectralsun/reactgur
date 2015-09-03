@@ -14,17 +14,22 @@ export default class RegisterModal extends ModalComponent
         super(props)
         ee.addListener('route:/register', this.open.bind(this));
     }
+
     componentDidUpdate() {
         if (this.refs.registrationForm)
             this.refs.registrationForm.ee.removeAllListeners('success')
-                                         .addListener('success', this.onRegistrationSuccess.bind(this));
+                                         .addListener('success', this.handleRegistrationSuccess.bind(this));
     }
+
     submit() {
         this.refs.registrationForm.submit();
     }
 
-    onRegistrationSuccess(data) {
-        ee.emit('update_app_data', data);
+    handleRegistrationSuccess(data) {
+        if (data && data.request_received) 
+            ee.emit('alert', {msg: 'Registration request received. You will receive an email when an admin approves your request.'})
+        else
+            ee.emit('update_app_data', data);
         this.close();
     }
 

@@ -4,9 +4,9 @@ from wtforms.fields.html5 import EmailField
 from wtforms.widgets import TextArea
 from flask_wtf import Form
 
-from reactgur.models import User
+from reactgur.models import User, UserRegistrationRequest
 
-class RegistrationReqeustForm(Form):
+class RegistrationRequestForm(Form):
     email = EmailField('Email Address', [validators.DataRequired(), validators.Email()])
     
 class RegistrationForm(Form):
@@ -29,6 +29,9 @@ class RegistrationForm(Form):
 
 class TokenRegistrationForm(RegistrationForm):
     token = TextField('token', [validators.DataRequired()])
+    def validate_token(form, field):
+        if not UserRegistrationRequest.get_request(form.email.data, field.data):
+            raise ValidationError('Invalid token and/or email.')
 
 class LoginForm(Form):
     username = TextField('Username', validators=[validators.DataRequired()])
