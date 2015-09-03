@@ -62,7 +62,7 @@ export default class RegistrationForm extends FormComponent
         }
         return (
             <div>
-               {APP_CONF.request_registration ? (
+               {APP_CONF.request_registration && !token ? (
                     <p>
                         Administrator approval is required before an account can be created. Submit your email and you will
                         receive an email with a link to register when your request has been approved.
