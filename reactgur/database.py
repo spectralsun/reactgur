@@ -58,7 +58,7 @@ class BaseModel(object):
     def ondeleted(self, callback):
         self.model_deleted.connect(callback, self)
 
-engine = create_engine(DATABASE_URL, convert_unicode=True)
+engine = create_engine(DATABASE_URL, convert_unicode=True, pool_recycle=3600)
 session = scoped_session(sessionmaker(autocommit=False, 
                                          autoflush=False, 
                                          bind=engine))
