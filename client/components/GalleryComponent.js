@@ -14,10 +14,8 @@ export default class GalleryComponent extends React.Component
         super(props);
         this.state = {images: []}
         this.columns = 5;
-        ee.addListener('page_wrapper', this.handlePageWrapper.bind(this));
         ee.addListener('resize', this.handleWindowResize.bind(this));
         ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
-        ee.addListener('app_data', this.handleAppData.bind(this));
     }
 
     componentWillMount() {
@@ -26,6 +24,8 @@ export default class GalleryComponent extends React.Component
 
     componentDidMount() {
         this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
+        this.page_wrapper = React.findDOMNode(this.refs.mainContainer).parentNode;
+        this.scroll = new Scroll(page_wrapper);
         this.createIsoContainer();      
     }
 
@@ -235,11 +235,6 @@ export default class GalleryComponent extends React.Component
         }
     }
 
-    handlePageWrapper(page_wrapper) {
-        this.page_wrapper = page_wrapper;
-        this.scroll = new Scroll(page_wrapper.getDOMNode());
-    }
-
     handleScroll(e, page_wrapper) {
         var container = this.refs.isoContainer.getDOMNode();
         var height = container.getBoundingClientRect().height + 81;
@@ -283,7 +278,7 @@ export default class GalleryComponent extends React.Component
 
     render() {
         return this.state.images.length == 0 ? (
-            <div className="jumbotron text-center">
+            <div ref="mainContainer" className="jumbotron text-center">
                 <h1 className="text-center">{"There's no images here!"}</h1>
                 <p>Upload some images!</p>
                 <p>
@@ -294,7 +289,7 @@ export default class GalleryComponent extends React.Component
                 </p>
             </div> 
         ) : (
-            <div>
+            <div ref="mainContainer">
                 <div ref="isoContainer" 
                      className="panel media-component text-center"
                      onScroll={this.handleScroll.bind(this)}>

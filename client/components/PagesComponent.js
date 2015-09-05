@@ -18,7 +18,6 @@ export default class PagesComponent extends React.Component
 
     componentDidMount() {
         this.refs.page_wrapper.getDOMNode().style.height = (window.innerHeight - 51) + 'px';
-        ee.emit('page_wrapper', this.refs.page_wrapper);
     }
     
     handleModalClose(modal) {
