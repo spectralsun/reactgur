@@ -36,15 +36,15 @@ export default class ModalComponent extends React.Component
     }
 
     open() {
-        if (lock.getLock()) {
-            lock.getLock().close(true)
-        }
+        if (lock.getLock()) 
+            lock.closeOpenModal();
         lock.setLock(this);
         this.setState({ show: true });
         ee.emit('modal_open', this);
     }
 
     close(e, id, dontemit) {
+        lock.removeLock();
         this.setState({ show: false });
         if (!dontemit)
             ee.emit('modal_close', this);
