@@ -11,4 +11,9 @@ export default class LoginForm extends FormComponent
             {name:'password', type:'password', label:'Password', placeholder: 'Enter password'}
         ]
     }
+
+    onSuccess(data) {
+        reactgur.setState({ user: data });
+        super.onSuccess(data);
+    }
 }

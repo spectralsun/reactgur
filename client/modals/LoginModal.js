@@ -38,7 +38,6 @@ export default class LoginModal extends ModalComponent
     }
 
     onLoginSuccess(data) {
-        ee.emit('update_app_data', data);
         if (this.open_upload_on_login) {
             history.pushState({}, '', '/upload');
             ee.emit('route:/upload');
