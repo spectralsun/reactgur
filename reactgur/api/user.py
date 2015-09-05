@@ -13,10 +13,9 @@ from reactgur.util import jsonify, api_alert_response
 user_api = Blueprint('user_api', __name__)
 
 anonymous_user_data = dict(
-    username=None,
-    email=None,
-    is_admin=False,
-    authed=False
+    username=False,
+    email=False,
+    is_admin=False
 )
 
 login_manager = LoginManager()
@@ -100,10 +99,8 @@ def register():
                         request.remote_addr)
         new_user.save()
         if login_user(new_user):
-            return jsonify(authed=True, 
-                           username=new_user.username,
-                           is_admin=new_user.is_admin)
-        return jsonify(authed=False)
+            return jsonify(new_user)
+        return jsonify(anonymous_user_data)
     form.errors['_status_code'] = 400 
     return jsonify(**form.errors)
 
@@ -128,9 +125,7 @@ def login():
         form_user = User.get_user(form.username.data)
         if form_user and form_user.check_password(form.password.data):
             if login_user(form_user):
-                return jsonify(authed=True, 
-                               username=form_user.username,
-                               is_admin=form_user.is_admin)
+                return jsonify(form_user)
             else:
                 return jsonify(username=['Your account is currently disabled.'], 
                     _status_code=400)

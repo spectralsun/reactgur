@@ -80,7 +80,6 @@ def index(filename=None):
         upload_requires_login=app.config['UPLOAD_REQUIRES_LOGIN']
     ))
     app_data = dict(
-        authed=current_user.is_authenticated(),
         user=anonymous_user_data,
         alerts=session.pop('alerts', [])
     )

@@ -12,7 +12,7 @@ export default class NavbarComponent extends React.Component
   }  
 
   render() { 
-    if (this.props.user.authed) {
+    if (this.props.user.username) {
       var userNameAndIcon = (
         <span>
           <span className="glyphicon glyphicon-user"></span>

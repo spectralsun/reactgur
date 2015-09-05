@@ -145,7 +145,7 @@ export default class UploadModal extends ModalComponent
     }
 
     checkUploadPrivilege() {
-        if (APP_CONF.upload_requires_login && !APP_DATA.authed) 
+        if (APP_CONF.upload_requires_login && !APP_DATA.username) 
             return;
         this.open();
     }
