@@ -12,7 +12,7 @@ from flask_wtf import CsrfProtect
 
 from reactgur import database
 from reactgur.api import user_api, media_api
-from reactgur.api.user import login_manager
+from reactgur.api.user import login_manager, anonymous_user_data
 from reactgur.mail import mail_session
 from reactgur.models import Media
 from reactgur.util import ExtensibleJSONEncoder
@@ -81,10 +81,10 @@ def index(filename=None):
     ))
     app_data = dict(
         authed=current_user.is_authenticated(),
+        user=anonymous_user_data,
         alerts=session.pop('alerts', [])
     )
     if current_user.is_authenticated():
-        app_data['username'] = current_user.username
-        app_data['is_admin'] = current_user.is_admin
+        app_data['user'] = current_user
     context['app_data'] = dumps(app_data)
     return render_template('index.html', **context)

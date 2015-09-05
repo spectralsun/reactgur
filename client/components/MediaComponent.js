@@ -59,7 +59,7 @@ export default class MediaComponent extends React.Component
                     </div>
                     <div className='media-overlay-background'></div>
                 </div>
-                {this.props.currentUser && (this.props.currentUser === this.props.image.user || this.props.currentUserIsAdmin) ? (
+                {this.props.currentUser && (this.props.currentUser === this.props.image.user || this.props.currentUser.is_admin) ? (
                     <div className='media-overlay media-overlay-top'>
                         <div className='media-delete-button media-api-button'
                              onClick={this.props.onDeleteClick}>

@@ -57,7 +57,7 @@ export default class PagesComponent extends React.Component
                 })}
                 </div>
                 <div id="page" className="container">
-                     <HomePage ref="homePage" />
+                     <HomePage user={this.props.user} ref="homePage" />
                 </div>
             </div>
         );

@@ -9,26 +9,20 @@ export default class NavbarComponent extends React.Component
 {
   constructor(props) {
     super(props)
-    this.state = APP_DATA;
-    ee.addListener('app_data', this.setData.bind(this));
   }  
 
-  setData(data) {
-    this.setState(data);
-  }
-
   render() { 
-    if (this.state.authed) {
+    if (this.props.user.authed) {
       var userNameAndIcon = (
         <span>
           <span className="glyphicon glyphicon-user"></span>
-          <span> {this.state.username}</span>
+          <span> {this.props.user.username}</span>
         </span>
       );
       var userNav = (
         <DropdownButton title={userNameAndIcon} right>
-            <MenuItem href={'/' + this.state.username + '/images'}>Images</MenuItem>
-            <MenuItem href={'/' + this.state.username + '/albums'}>Albums</MenuItem>
+            <MenuItem href={'/' + this.props.user.username + '/images'}>Images</MenuItem>
+            <MenuItem href={'/' + this.props.user.username + '/albums'}>Albums</MenuItem>
             <MenuItem href='/logout'>Logout</MenuItem>
         </DropdownButton>
       );

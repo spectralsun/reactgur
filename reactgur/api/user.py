@@ -12,7 +12,12 @@ from reactgur.util import jsonify, api_alert_response
 
 user_api = Blueprint('user_api', __name__)
 
-anonymous_user_json = dict(username=None, is_admin=False)
+anonymous_user_data = dict(
+    username=None,
+    email=None,
+    is_admin=False,
+    authed=False
+)
 
 login_manager = LoginManager()
 @login_manager.user_loader
@@ -139,4 +144,4 @@ def login():
 @user_api.route('/api/v1/logout', methods=['POST'])
 def logout():
     logout_user()
-    return jsonify(authed=False, username=None, is_admin=False)
+    return jsonify(**anonymous_user_data)

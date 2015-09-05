@@ -16,6 +16,7 @@ class Reactgur extends React.Component
 {
     constructor(props) {
         super(props);
+        this.state = {user: APP_DATA.user}
     }
     
     componentDidMount() {
@@ -29,8 +30,8 @@ class Reactgur extends React.Component
     render() {
         return (
             <div id="app">
-                <NavbarComponent ref="navbarComponent"/>
-                <PagesComponent ref="pageComponent"/>
+                <NavbarComponent user={this.state.user} ref="navbarComponent"/>
+                <PagesComponent user={this.state.user} ref="pageComponent"/>
                 <LoginModal refs="loginModal"/>
                 <RegisterModal refs="registerModal"/>
                 <UploadModal refs="uploadModa"/>
@@ -40,7 +41,7 @@ class Reactgur extends React.Component
     }
 }
 
-React.render(<Reactgur/>, document.getElementById('entry'));
+window.reactgur = React.render(<Reactgur/>, document.getElementById('entry'));
 
 let path_change = (path) => {
     var emit_path = path;
@@ -93,7 +94,7 @@ ee.addListener('route:/logout', () => {
         headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content }
     })
     .then((data) => {
-        ee.emit('update_app_data', data);
+        reactgur.setState({user: data});
     })
 });
 

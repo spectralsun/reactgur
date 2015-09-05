@@ -12,7 +12,7 @@ export default class GalleryComponent extends React.Component
 {
     constructor(props) {
         super(props);
-        this.state = {images: [], user: APP_DATA.username, is_admin: APP_DATA.is_admin}
+        this.state = {images: []}
         this.columns = 5;
         ee.addListener('page_wrapper', this.handlePageWrapper.bind(this));
         ee.addListener('resize', this.handleWindowResize.bind(this));
@@ -122,10 +122,6 @@ export default class GalleryComponent extends React.Component
         this.expanded.img.src = this.expanded.item.dataset.thumbnail;
         this.setExpandedSize(0, 0, 180, 180);
         this.expanded.item.style.right = '';
-    }
-
-    handleAppData(data) {
-        this.setState({user: data.username, is_admin: data.is_admin});
     }
 
     handleDeleteClick(e) {
@@ -308,8 +304,7 @@ export default class GalleryComponent extends React.Component
                                             onClick={this.handleItemClick.bind(this)}
                                             onImageLoad={this.handleImageLoad.bind(this)} 
                                             onDeleteClick={this.handleDeleteClick.bind(this)}
-                                            currentUser={this.state.user}
-                                            currentUserIsAdmin={this.state.is_admin} />
+                                            currentUser={this.props.user} />
                         );
                     })}
                 </div>
