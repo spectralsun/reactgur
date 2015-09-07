@@ -68,7 +68,7 @@ document.body.addEventListener('click', (e) => {
         e.preventDefault();
     if (link.pathname && 
         link.className.indexOf('ignore') === -1 &&
-        link.href.length > 0 && link.href != '#') {
+        link.href.length > 0 && typeof link.hash !== 'undefined') {
         var path = link.pathname;
         if (no_push_state.indexOf(link.pathname) == -1) {
             history.pushState({}, '', link.pathname);
