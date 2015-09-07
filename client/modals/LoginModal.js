@@ -18,7 +18,7 @@ export default class LoginModal extends ModalComponent
     componentDidUpdate() {
         if (this.refs.loginForm)
             this.refs.loginForm.ee.removeAllListeners('success')
-                                  .addListener('success', this.onLoginSuccess.bind(this));
+                                  .addListener('success', this.handleLoginSuccess.bind(this));
     }
     checkUploadPrivilege() {
         if (APP_CONF.upload_requires_login && !APP_DATA.username) {
@@ -37,7 +37,7 @@ export default class LoginModal extends ModalComponent
         this.refs.loginForm.submit();
     }
 
-    onLoginSuccess(data) {
+    handleLoginSuccess(data) {
         if (this.open_upload_on_login) {
             history.pushState({}, '', '/upload');
             ee.emit('route:/upload');

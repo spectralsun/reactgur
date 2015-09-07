@@ -12,8 +12,8 @@ export default class LoginForm extends FormComponent
         ]
     }
 
-    onSuccess(data) {
+    handleSuccess(data) {
         reactgur.setState({ user: data });
-        super.onSuccess(data);
+        super.handleSuccess(data);
     }
 }

@@ -27,14 +27,14 @@ class FileUploadQueue
     }
 
     upload(fileUpload) {
-        fileUpload.ee.addListener('load', this.onUploadFinish.bind(this));
-        fileUpload.ee.addListener('error', this.onUploadFinish.bind(this));
-        fileUpload.ee.addListener('abort', this.onUploadFinish.bind(this));
+        fileUpload.ee.addListener('load', this.handleUploadFinish.bind(this));
+        fileUpload.ee.addListener('error', this.handleUploadFinish.bind(this));
+        fileUpload.ee.addListener('abort', this.handleUploadFinish.bind(this));
         this.current_upload_count++;
         fileUpload.upload()
     }
 
-    onUploadFinish() {
+    handleUploadFinish() {
         this.current_upload_count--;
         this.checkQueue();
     }
@@ -88,11 +88,11 @@ class UploadComponent extends React.Component
     constructor(props) {
         super(props)
         this.upload = new FileUpload(this.props.file);
-        this.upload.ee.addListener('load', this.onLoad.bind(this));
-        this.upload.ee.addListener('loadstart', this.onLoadStart.bind(this));
-        this.upload.ee.addListener('progress', this.onProgress.bind(this));
-        this.upload.ee.addListener('error', this.onError.bind(this));
-        this.upload.ee.addListener('abort', this.onAbort.bind(this));
+        this.upload.ee.addListener('load', this.handleLoad.bind(this));
+        this.upload.ee.addListener('loadstart', this.handleLoadStart.bind(this));
+        this.upload.ee.addListener('progress', this.handleProgress.bind(this));
+        this.upload.ee.addListener('error', this.handleError.bind(this));
+        this.upload.ee.addListener('abort', this.handleAbort.bind(this));
         this.upload.ee.addListener('readystatechange', this.onReadyStateChange.bind(this));
         this.state = { progress: 0 }
     }
@@ -101,11 +101,11 @@ class UploadComponent extends React.Component
         this.upload.start();
     }
 
-    onLoadStart(e) {
+    handleLoadStart(e) {
         this.setState({ progress: (e.loaded/e.total) * 100 });
     }
 
-    onLoad(e) {
+    handleLoad(e) {
         this.setState({ progress: (e.loaded/e.total) * 100 });
         this.props.ee.emit('load');
     }
@@ -116,15 +116,15 @@ class UploadComponent extends React.Component
         }
     }
 
-    onProgress(e) {
+    handleProgress(e) {
         this.setState({ progress: (e.loaded/e.total) * 100 });
     }
 
-    onError(e) {
+    handleError(e) {
         console.log(e)
     }
 
-    onAbort(e) {
+    handleAbort(e) {
         console.log(e)
     }
 
@@ -150,7 +150,7 @@ export default class UploadModal extends ModalComponent
         this.open();
     }
 
-    onInputChange(e) {
+    handleInputChange(e) {
         for (var x = 0; x < e.target.files.length; x++) {
             var ee = new EventEmitter();
             var upload = <UploadComponent key={x} ee={ee} file={e.target.files[x]} />;
@@ -160,7 +160,7 @@ export default class UploadModal extends ModalComponent
         this.setState({uploads: this.uploads.length })
     }
 
-    onUploadFinish() {
+    handleUploadFinish() {
         var upload_count = this.state.uploads - 1;
         if (upload_count == 0) {
             this.uploads = [];
@@ -198,7 +198,7 @@ export default class UploadModal extends ModalComponent
                         <span id="upload_button" className="btn btn-success btn-lg">
                             <i className="glyphicon glyphicon-plus"/>
                             <span> Select files...</span>
-                            <input type="file" name="file" multiple onChange={this.onInputChange.bind(this)} />
+                            <input type="file" name="file" multiple onChange={this.handleInputChange.bind(this)} />
                         </span>
                     ) : null}
                     <div>
