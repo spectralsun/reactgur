@@ -16,15 +16,64 @@ class Reactgur extends React.Component
 {
     constructor(props) {
         super(props);
-        this.state = {user: APP_DATA.user}
+        this.state = { user: APP_DATA.user }
     }
     
     componentDidMount() {
         this._notificationSystem = this.refs.notificationSystem;
+        const no_push_state = [
+            '/logout'
+        ];
+        document.body.addEventListener('click', (e) => {
+            var link = e.target;
+            // Bubble up the chain to check for a link
+            while (!link.pathname && link.parentNode)
+                link = link.parentNode;
+
+            if (link.className && link.className.indexOf('allow') != -1)
+                return;
+
+            // If there is a link, prevent the page change
+            if (link.pathname)
+                e.preventDefault();
+
+            if (link.pathname && 
+                link.className.indexOf('ignore') === -1 &&
+                link.href.length > 0 && typeof link.hash !== 'undefined') {
+                var path = link.pathname;
+                if (no_push_state.indexOf(link.pathname) == -1) {
+                    history.pushState({}, '', link.pathname + link.search);
+                }
+                this.path_change(path);
+            }
+        });
+        window.onpopstate = () => {
+            this.path_change(document.location.pathname);
+            
+        }
+        ee.addListener('route:/logout', () => {
+            xhttp({
+                url: '/api/v1/logout',
+                method: 'post',
+                headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content }
+            })
+            .then((data) => {
+                reactgur.setState({user: data});
+            })
+        });
+        this.path_change(document.location.pathname);
     }
 
     addNotification(data) {
         this._notificationSystem.addNotification(data);
+    }
+
+    path_change(path) {
+        var emit_path = path;
+        if (path.indexOf('/i/') === 0) {
+            emit_path = '/i/:image';
+        }
+        ee.emit('route:' + emit_path);
     }
 
     render() {
@@ -34,7 +83,7 @@ class Reactgur extends React.Component
                 <PagesComponent user={this.state.user} ref="pageComponent"/>
                 <LoginModal refs="loginModal"/>
                 <RegisterModal refs="registerModal"/>
-                <UploadModal refs="uploadModa"/>
+                <UploadModal refs="uploadModal"/>
                 <NotificationSystem ref='notificationSystem' />
             </div>
         );
@@ -42,61 +91,6 @@ class Reactgur extends React.Component
 }
 
 window.reactgur = React.render(<Reactgur/>, document.getElementById('entry'));
-
-let path_change = (path) => {
-    var emit_path = path;
-    if (path.indexOf('/i/') === 0) {
-        emit_path = '/i/:image';
-    }
-    ee.emit('route:' + emit_path);
-}
-
-const no_push_state = [
-    '/logout'
-];
-document.body.addEventListener('click', (e) => {
-    var link = e.target;
-    // Bubble up the chain to check for a link
-    while (!link.pathname && link.parentNode)
-        link = link.parentNode;
-
-    if (link.className && link.className.indexOf('allow') != -1)
-        return;
-
-    // If there is a link, prevent the page change
-    if (link.pathname)
-        e.preventDefault();
-    if (link.pathname && 
-        link.className.indexOf('ignore') === -1 &&
-        link.href.length > 0 && typeof link.hash !== 'undefined') {
-        var path = link.pathname;
-        if (no_push_state.indexOf(link.pathname) == -1) {
-            history.pushState({}, '', link.pathname + link.search);
-        }
-        path_change(path);
-    }
-});
-window.onpopstate = function() {
-    path_change(document.location.pathname);
-    
-}
-path_change(document.location.pathname);
-
-ee.addListener('update_app_data', (data) => {
-    window.APP_DATA = data;
-    ee.emit('app_data', data);
-})
-
-ee.addListener('route:/logout', () => {
-    xhttp({
-        url: '/api/v1/logout',
-        method: 'post',
-        headers: { 'X-CSRFToken': document.querySelector('meta[name="csrf-token"]').content }
-    })
-    .then((data) => {
-        reactgur.setState({user: data});
-    })
-});
 
 /*\
 |*|
