@@ -71,7 +71,7 @@ document.body.addEventListener('click', (e) => {
         link.href.length > 0 && typeof link.hash !== 'undefined') {
         var path = link.pathname;
         if (no_push_state.indexOf(link.pathname) == -1) {
-            history.pushState({}, '', link.pathname);
+            history.pushState({}, '', link.pathname + link.search);
         }
         path_change(path);
     }
