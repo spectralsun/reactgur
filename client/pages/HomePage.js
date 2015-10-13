@@ -20,7 +20,8 @@ export default class HomePage extends React.Component
     
     render() {
         return (
-            <GalleryComponent ref='galleryComponent' />
+            <GalleryComponent user={this.props.user}
+                              ref='galleryComponent' />
         )
     }
 }

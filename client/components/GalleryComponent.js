@@ -299,7 +299,7 @@ export default class GalleryComponent extends React.Component
                                             onClick={this.handleItemClick.bind(this)}
                                             onImageLoad={this.handleImageLoad.bind(this)} 
                                             onDeleteClick={this.handleDeleteClick.bind(this)}
-                                            currentUser={this.props.user} />
+                                            user={this.props.user} />
                         );
                     })}
                 </div>
