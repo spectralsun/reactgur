@@ -1,139 +1,12 @@
+import EventEmitter from 'events';
 import React from 'react';
 import xhttp from 'xhttp';
-import {Modal, Button, Input, Alert, ProgressBar} from 'react-bootstrap';
-import EventEmitter from 'events';
+import {Modal, Button, Input, Alert} from 'react-bootstrap';
 
 import ee from './../Emitter.js';
 import ModalComponent from './../components/ModalComponent.js';
+import UploadComponent from './../components/UploadComponent.js';
 
-const max_parallel_uploads = 2;
-
-class FileUploadQueue
-{
-    constructor() {
-        this.queue = [];
-        this.current_upload_count = 0;
-    }
-
-    checkQueue() {
-        if (this.queue.length > 0)
-            this.upload(this.queue.shift());
-    }
-
-    enterQueue(fileUpload) {
-        if (this.current_upload_count >= max_parallel_uploads)
-            return this.queue.push(fileUpload);
-        this.upload(fileUpload);
-    }
-
-    upload(fileUpload) {
-        fileUpload.ee.addListener('load', this.handleUploadFinish.bind(this));
-        fileUpload.ee.addListener('error', this.handleUploadFinish.bind(this));
-        fileUpload.ee.addListener('abort', this.handleUploadFinish.bind(this));
-        this.current_upload_count++;
-        fileUpload.upload()
-    }
-
-    handleUploadFinish() {
-        this.current_upload_count--;
-        this.checkQueue();
-    }
-}
-
-const fileUploadQueue = new FileUploadQueue();
-
-class FileUpload 
-{
-    constructor(file) {
-        this.file = file;
-        this.content = 'Content-Disposition: form-data; name="files[]"; filename="' + file.name + '"\r\nContent-Type: ' + file.type + '\r\n\r\n';
-        this.fileReader = new FileReader();
-        this.fileReader.onload = this.queue.bind(this);
-        this.ee = new EventEmitter();
-    }
-
-    queue(e) {
-        this.content += e.target.result + '\r\n';
-        fileUploadQueue.enterQueue(this);
-    }
-
-    upload(e) {
-        var boundary = "---------------------------" + Date.now().toString(16);
-        var request = new XMLHttpRequest();
-        request.upload.onprogress = this.createEmitter('progress');
-        request.upload.onload = this.createEmitter('load');
-        request.upload.onloadstart = this.createEmitter('loadstart');
-        request.upload.onloadend = this.createEmitter('loadend');
-        request.upload.onerror = this.createEmitter('error');
-        request.upload.onabort = this.createEmitter('abort');
-        request.onreadystatechange = this.createEmitter('readystatechange');
-        request.open('post', '/api/v1/media', true);
-        request.setRequestHeader('Content-Type', 'multipart\/form-data; boundary=' + boundary);
-        request.setRequestHeader('X-CSRFToken', document.querySelector('meta[name="csrf-token"]').content);
-        request.sendAsBinary('--' + boundary + '\r\n' + this.content + '\r\n--' + boundary + '--\r\n')
-    }
-
-    createEmitter(ns) {
-        var ee = this.ee;
-        return (e) => { console.log(arguments); ee.emit(ns, e) }
-    }
-
-    start() {
-        this.fileReader.readAsBinaryString(this.file);
-    }
-}
-
-class UploadComponent extends React.Component
-{
-    constructor(props) {
-        super(props)
-        this.upload = new FileUpload(this.props.file);
-        this.upload.ee.addListener('load', this.handleLoad.bind(this));
-        this.upload.ee.addListener('loadstart', this.handleLoadStart.bind(this));
-        this.upload.ee.addListener('progress', this.handleProgress.bind(this));
-        this.upload.ee.addListener('error', this.handleError.bind(this));
-        this.upload.ee.addListener('abort', this.handleAbort.bind(this));
-        this.upload.ee.addListener('readystatechange', this.onReadyStateChange.bind(this));
-        this.state = { progress: 0 }
-    }
-
-    componentDidMount() {
-        this.upload.start();
-    }
-
-    handleLoadStart(e) {
-        this.setState({ progress: (e.loaded/e.total) * 100 });
-    }
-
-    handleLoad(e) {
-        this.setState({ progress: (e.loaded/e.total) * 100 });
-        this.props.ee.emit('load');
-    }
-
-    onReadyStateChange(e) {
-        if (e.target.readyState == 4 && e.target.status == 200) {
-            ee.emit('media_uploaded', JSON.parse(e.target.responseText))
-        }
-    }
-
-    handleProgress(e) {
-        this.setState({ progress: (e.loaded/e.total) * 100 });
-    }
-
-    handleError(e) {
-        console.log(e)
-    }
-
-    handleAbort(e) {
-        console.log(e)
-    }
-
-    render() {
-        return (
-            <ProgressBar bsStyle='success' now={this.state.progress} />
-        );
-    }
-}
 
 export default class UploadModal extends ModalComponent
 {
@@ -145,7 +18,7 @@ export default class UploadModal extends ModalComponent
     }
 
     checkUploadPrivilege() {
-        if (APP_CONF.upload_requires_login && !APP_DATA.username) 
+        if (APP_CONF.upload_requires_login && !APP_DATA.user.username) 
             return;
         this.open();
     }
@@ -153,8 +26,10 @@ export default class UploadModal extends ModalComponent
     handleInputChange(e) {
         for (var x = 0; x < e.target.files.length; x++) {
             var ee = new EventEmitter();
-            var upload = <UploadComponent key={x} ee={ee} file={e.target.files[x]} />;
-            ee.addListener('load', this.onUploadFinish.bind(this));
+            var upload = <UploadComponent key={x} 
+                                          ee={ee} 
+                                          file={e.target.files[x]} />;
+            ee.addListener('load', this.handleUploadFinish.bind(this));
             this.uploads.push(upload);
         }
         this.setState({uploads: this.uploads.length })
