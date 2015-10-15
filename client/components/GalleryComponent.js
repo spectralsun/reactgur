@@ -122,45 +122,56 @@ export default class GalleryComponent extends React.Component
         this.expanded.item.style.right = '';
     }
 
-    handleDeleteClick(e) {
-        var node = e.target;
-        while (node.className.indexOf('media-item') === -1)
-            node = node.parentNode;
-        this.deleteMediaId = node.dataset.id;
-        this.deleteMediaNode = node;
-        this.refs.confirmModal.setState({
-            message: 'Are you sure you wish to delete this image?',
-            title: 'Confirm Delete Image',
-            confirm: 'Delete Image',
-            cancel: 'Cancel'
-        })
-        this.refs.confirmModal.open(this.handleDeleteConfirm.bind(this));
-    }
-
-    handleDeleteConfirm(confirmed) {
-        if (!confirmed) return;
-        xhttp({
-            url: '/api/v1/media',
-            method: 'delete',
-            headers: { 'X-CSRFToken': this.csrfToken },
-            data: {id: this.deleteMediaId}
-        })
-        .then(this.handleDeleteSuccess.bind(this))
-        .catch(this.handleDeleteError.bind(this))
-    }
-
-    handleDeleteError() {
-
-    }
-
-    handleDeleteSuccess() {
-        this.iso.remove(this.deleteMediaNode);
-        var images = this.state.images.slice(0);
-        for (var x = 0; x < images.length; x++) 
-            if (images[x].href === this.deleteMediaId) {
-                images.splice(x, 1);
-                return this.setState({ images: images });
+    expand(item) {
+        if (this.expanded) {
+            this.closeExpanded();
+            if (this.expanded.id === item.dataset.id) {
+                this.scrollTo = this.expanded;
+                this.shrunkTo = this.expanded.img.src;
+                this.expanded = null;
+                return;
             }
+        }
+        this.expanded = this.scrollTo = {
+            id: item.dataset.id,
+            item: item,
+            img: item.firstChild
+        }
+        this.expanded.item.className = 'media-item well expanded';
+        this.expanded.img.src = this.expanded.item.dataset.href;
+        this.calculateExpandedSize(); 
+        this.calculateExpandedPosition(); 
+        this.iso.arrange();
+    }
+
+    handleImageLoad(e) {
+        if (this.expanded || this.shrunkTo) {
+            this.shrunkTo = null;
+            this.iso.arrange();
+        }
+    }
+
+    handleItemClick(e) {
+        var node = e.target;
+        var bottom_overlay = null;
+        var item = null;
+        while (!item) {
+            if (node.className.indexOf('media-api-button') !== -1)
+                return;
+            if (node.className.indexOf('media-overlay-bottom') !== -1)
+                bottom_overlay = node;
+            if (node.className.indexOf('media-item') !== -1)
+                item = node;
+            node = node.parentNode;
+        }
+        if (bottom_overlay && item.className.indexOf('expanded') !== -1) 
+            return; 
+        this.expand(item);
+    }
+
+    handleItemDelete(mediaItemNode) {
+        mediaItemNode.style.display = 'none';
+        this.iso.arrange();
     }
 
     handleLayoutComplete() {
@@ -184,53 +195,8 @@ export default class GalleryComponent extends React.Component
     }
     
     handleLoadSuccess(data) {
-        this.appendMedia = true;
         this.setState({images: this.state.images.concat(data)});
         this.loadLock = false;
-    }
-
-    handleItemClick(e) {
-        var node = e.target;
-        var bottom_overlay = null;
-        var item = null;
-        while (!item) {
-            if (node.className.indexOf('media-api-button') !== -1)
-                return;
-            if (node.className.indexOf('media-overlay-bottom') !== -1)
-                bottom_overlay = node;
-            if (node.className.indexOf('media-item') !== -1)
-                item = node;
-            node = node.parentNode;
-        }
-        if (bottom_overlay && item.className.indexOf('expanded') !== -1) 
-            return; 
-        
-        if (this.expanded) {
-            this.closeExpanded();
-            if (this.expanded.id === item.dataset.id) {
-                this.scrollTo = this.expanded;
-                this.shrunkTo = this.expanded.img.src;
-                this.expanded = null;
-                return;
-            }
-        }
-        this.expanded = this.scrollTo = {
-            id: item.dataset.id,
-            item: item,
-            img: item.firstChild
-        }
-        this.expanded.item.className = 'media-item well expanded';
-        this.expanded.img.src = this.expanded.item.dataset.href;
-        this.calculateExpandedSize(); 
-        this.calculateExpandedPosition(); 
-        this.iso.layout();
-    }
-
-    handleImageLoad(e) {
-        if (this.expanded || this.shrunkTo) {
-            this.shrunkTo = null;
-            this.iso.layout();
-        }
     }
 
     handleScroll(e, page_wrapper) {
@@ -244,7 +210,7 @@ export default class GalleryComponent extends React.Component
     handleWindowResize() {
         this.calculateMaxSize();
         this.calculateExpandedSize();
-        this.iso.layout();
+        this.iso.arrange();
     }
 
     fetchMedia() {
@@ -295,8 +261,8 @@ export default class GalleryComponent extends React.Component
                         return (
                             <MediaComponent image={image}
                                             onClick={this.handleItemClick.bind(this)}
+                                            onDelete={this.handleItemDelete.bind(this)}
                                             onImageLoad={this.handleImageLoad.bind(this)} 
-                                            onDeleteClick={this.handleDeleteClick.bind(this)}
                                             user={this.props.user} />
                         );
                     })}
