@@ -1,8 +1,6 @@
 import React from 'react';
 import xhttp from 'xhttp';
 
-import ConfirmModal from './../modals/ConfirmModal.js';
-
 import MediaComponent from './../components/MediaComponent.js';
 
 import ee from '../Emitter.js';
@@ -303,7 +301,7 @@ export default class GalleryComponent extends React.Component
                         );
                     })}
                 </div>
-                <ConfirmModal ref='confirmModal' />
+                
             </div>
         );
     }

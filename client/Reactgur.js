@@ -5,6 +5,7 @@ import xhttp from 'xhttp';
 import NavbarComponent from './components/NavbarComponent.js';
 import PagesComponent from './components/PagesComponent.js';
 
+import ConfirmModal from './modals/ConfirmModal.js';
 import LoginModal from './modals/LoginModal.js';
 import RegisterModal from './modals/RegisterModal.js';
 import UploadModal from './modals/UploadModal.js';
@@ -84,6 +85,7 @@ class Reactgur extends React.Component
                 <LoginModal refs="loginModal"/>
                 <RegisterModal refs="registerModal"/>
                 <UploadModal refs="uploadModal"/>
+                <ConfirmModal ref='confirmModal' />
                 <NotificationSystem ref='notificationSystem' />
             </div>
         );
@@ -91,7 +93,6 @@ class Reactgur extends React.Component
 }
 
 window.reactgur = React.render(<Reactgur/>, document.getElementById('entry'));
-
 /*\
 |*|
 |*|  :: XMLHttpRequest.prototype.sendAsBinary() Polyfill ::
