@@ -34,7 +34,19 @@ a:active {
     opacity: 0;
 }
 #page .panel {
-    padding-left: 74px;
+    width: 992px;
+    margin: 0 auto;
+    padding-bottom: 100px;
+}
+@media (max-width: 992px) {
+    #page .panel {
+        width: 794px;
+    }
+}
+@media (max-width: 794px) {
+    #page .panel {
+        width: 596px;
+    }
 }
 .loading-container {
     display: none;
@@ -196,4 +208,40 @@ a:active {
 
 .nav li > a {
     font-size: 17px;
+}
+
+#loading_bar {
+    padding: 10px;
+    font-size: 42px;
+    display: none;
+    position: relative;
+    top: -90px;
+    height: 0px;
+}
+.glyphicon-spin {
+  -webkit-animation: glyphicon-spin 2s infinite linear;
+          animation: glyphicon-spin 2s infinite linear;
+}
+
+
+@-webkit-keyframes glyphicon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+@keyframes glyphicon-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
 }

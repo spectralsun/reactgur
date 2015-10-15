@@ -1,4 +1,5 @@
 import React from 'react';
+import {Glyphicon} from 'react-bootstrap';
 import xhttp from 'xhttp';
 
 import MediaComponent from './../components/MediaComponent.js';
@@ -195,14 +196,15 @@ export default class GalleryComponent extends React.Component
     }
     
     handleLoadSuccess(data) {
+        this.refs.loadingBar.getDOMNode().style.display = 'none';
         this.setState({images: this.state.images.concat(data)});
         this.loadLock = false;
     }
 
     handleScroll(e, page_wrapper) {
         var container = this.refs.isoContainer.getDOMNode();
-        var height = container.getBoundingClientRect().height + 81;
-        if (this.scroll.position() == height - window.innerHeight) {
+        var height = container.getBoundingClientRect().height + 61;
+        if (this.scroll.position() <= height - window.innerHeight) {
             this.fetchMedia();
         }
     }
@@ -216,6 +218,7 @@ export default class GalleryComponent extends React.Component
     fetchMedia() {
         if (this.loadLock)
             return;
+        this.refs.loadingBar.getDOMNode().style.display = 'block';
         this.loadLock = true;
         xhttp({
             url: '/api/v1/media',
@@ -247,7 +250,7 @@ export default class GalleryComponent extends React.Component
                 <p>Upload some images!</p>
                 <p>
                     <a href="/upload" className="btn btn-success btn-lg">
-                        <span className="glyphicon glyphicon-cloud-upload"></span>
+                        <Glyphicon glyp='cloud-upload' />
                         <span> Upload Images</span>
                     </a>
                 </p>
@@ -267,7 +270,9 @@ export default class GalleryComponent extends React.Component
                         );
                     })}
                 </div>
-                
+                <div id="loading_bar" className="text-center" ref='loadingBar'>
+                    <Glyphicon glyph='refresh' className='glyphicon-spin' />
+                </div>
             </div>
         );
     }
