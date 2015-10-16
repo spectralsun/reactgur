@@ -82,9 +82,9 @@ class Reactgur extends React.Component
             <div id="app">
                 <NavbarComponent user={this.state.user} ref="navbarComponent"/>
                 <PagesComponent user={this.state.user} ref="pageComponent"/>
-                <LoginModal refs="loginModal"/>
-                <RegisterModal refs="registerModal"/>
-                <UploadModal refs="uploadModal"/>
+                <LoginModal user={this.state.user} refs="loginModal"/>
+                <RegisterModal user={this.state.user} refs="registerModal"/>
+                <UploadModal user={this.state.user} refs="uploadModal"/>
                 <ConfirmModal ref='confirmModal' />
                 <NotificationSystem ref='notificationSystem' />
             </div>

@@ -21,10 +21,6 @@ export default class RegisterModal extends ModalComponent
                                          .addListener('success', this.handleRegistrationSuccess.bind(this));
     }
 
-    submit() {
-        this.refs.registrationForm.submit();
-    }
-
     handleRegistrationSuccess(data) {
         if (data && data.request_received) 
             ee.emit('alert', {
@@ -34,6 +30,16 @@ export default class RegisterModal extends ModalComponent
         else
             ee.emit('update_app_data', data);
         this.close();
+    }
+
+    open(props) {
+        if (this.props.user.username)
+            return window.history.pushState({}, '', '/');
+        super.open(props)
+    }
+
+    submit() {
+        this.refs.registrationForm.submit();
     }
 
     render() {

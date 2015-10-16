@@ -21,7 +21,7 @@ export default class LoginModal extends ModalComponent
                                   .addListener('success', this.handleLoginSuccess.bind(this));
     }
     checkUploadPrivilege() {
-        if (APP_CONF.upload_requires_login && !APP_DATA.user.username) {
+        if (APP_CONF.upload_requires_login && !this.props.user.username) {
             this.open();
             history.pushState({}, '', '/login');
             this.open_upload_on_login = true;
