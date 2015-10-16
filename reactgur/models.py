@@ -5,6 +5,7 @@ from flask import current_app
 from sqlalchemy import Column, DateTime, Integer, String, Boolean, Text, \
     ForeignKey, or_, desc
 from sqlalchemy.orm import relationship, backref
+from sqlalchemy.dialects.mysql import DATETIME
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from reactgur.database import Model
@@ -17,7 +18,7 @@ class Media(Model):
     name = Column(String(255))
     width = Column(Integer)
     height = Column(Integer)
-    created_at = Column(DateTime, default=datetime.now)
+    created_at = Column(DATETIME(fsp=6), default=datetime.now)
     thumbnail_id = Column(Integer, ForeignKey('media.id'))
     thumbnail = relationship('Media', remote_side=[id],
         backref=backref('original', uselist=False))
@@ -52,7 +53,8 @@ class Media(Model):
             href='/' + self.filename,
             name=self.name,
             width=str(self.width),
-            height=str(self.height)
+            height=str(self.height),
+            created_at=int(self.created_at.strftime('%s'))
         )
         if self.thumbnail:
             json['thumbnail'] = self.thumbnail.to_json()
