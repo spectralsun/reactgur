@@ -22,36 +22,35 @@ class Reactgur extends React.Component
     
     componentDidMount() {
         this._notificationSystem = this.refs.notificationSystem;
+
+        // Don't change the push state for these routes
         const no_push_state = [
             '/logout'
         ];
+        // Catch-All click handler
         document.body.addEventListener('click', (e) => {
             var link = e.target;
             // Bubble up the chain to check for a link
             while (!link.pathname && link.parentNode)
                 link = link.parentNode;
 
+            // Ignore links with 'allow' class
             if (link.className && link.className.indexOf('allow') != -1)
                 return;
 
-            // If there is a link, prevent the page change
-            if (link.pathname)
+            if (link.pathname) {
                 e.preventDefault();
-
-            if (link.pathname && 
-                link.className.indexOf('ignore') === -1 &&
-                link.href.length > 0 && typeof link.hash !== 'undefined') {
-                var path = link.pathname;
-                if (no_push_state.indexOf(link.pathname) == -1) {
-                    history.pushState({}, '', link.pathname + link.search);
-                }
-                this.path_change(path);
+                if (no_push_state.indexOf(link.pathname) == -1) 
+                    history.pushState({}, '', link.pathname + link.search + link.hash);
+                this.path_change(link.pathname);
             }
         });
+        // Listen for user popping history state
         window.onpopstate = () => {
             this.path_change(document.location.pathname);
             
         }
+        // Logout route listener
         ee.addListener('route:/logout', () => {
             xhttp({
                 url: '/api/v1/logout',
@@ -62,6 +61,7 @@ class Reactgur extends React.Component
                 reactgur.setState({user: data});
             })
         });
+        // Update from the current pathname
         this.path_change(document.location.pathname);
     }
 
