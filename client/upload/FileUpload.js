@@ -5,7 +5,7 @@ import fileUploadQueue from './FileUploadQueue.js';
 export default class FileUpload 
 {
     constructor(file) {
-        this.content = 'Content-Disposition: form-data; name="files[]"; filename="' + file.name + '"\r\nContent-Type: ' + file.type + '\r\n\r\n';
+        this.content = 'Content-Disposition: form-data; name="file"; filename="' + file.name + '"\r\nContent-Type: ' + file.type + '\r\n\r\n';
         this.ee = new EventEmitter();
         this.file = file;
         this.fileReader = new FileReader();

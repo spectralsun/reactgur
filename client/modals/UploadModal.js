@@ -13,6 +13,7 @@ export default class UploadModal extends ModalComponent
     constructor(props) {
         super(props)
         this.uploads = []
+        this.uploaded = []
         this.state = { uploads: 0 }
         ee.addListener('route:/upload', this.checkUploadPrivilege.bind(this));
     }
@@ -25,22 +26,29 @@ export default class UploadModal extends ModalComponent
 
     handleInputChange(e) {
         for (var x = 0; x < e.target.files.length; x++) {
-            var ee = new EventEmitter();
+            var emitter = new EventEmitter();
             var upload = <UploadComponent key={x} 
-                                          ee={ee} 
+                                          ee={emitter}
                                           file={e.target.files[x]} />;
-            ee.addListener('load', this.handleUploadFinish.bind(this));
+            emitter.addListener('load', this.handleLoad.bind(this));
+            emitter.addListener('uploaded', this.handleUploaded.bind(this));
             this.uploads.push(upload);
         }
         this.setState({uploads: this.uploads.length })
     }
 
-    handleUploadFinish() {
+    handleLoad() {
         var upload_count = this.state.uploads - 1;
-        if (upload_count == 0) {
-            this.uploads = [];
-        }
         this.setState({ show: upload_count > 0, uploads: upload_count });
+    }
+
+    handleUploaded(upload) {
+        this.uploaded.push(upload)
+        if (this.state.uploads == 0) {
+            ee.emit('media_uploaded', this.uploaded);
+            this.uploads = [];
+            this.uploaded = [];
+        }
     }
 
     cancel() {

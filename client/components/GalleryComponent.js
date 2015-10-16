@@ -7,14 +7,13 @@ import MediaComponent from './../components/MediaComponent.js';
 import ee from '../Emitter.js';
 import Scroll from '../Scroll.js';
 
+
 export default class GalleryComponent extends React.Component 
 {
     constructor(props) {
         super(props);
         this.state = {images: []}
         this.columns = 5;
-        ee.addListener('resize', this.handleWindowResize.bind(this));
-        ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
     }
 
     componentWillMount() {
@@ -22,6 +21,9 @@ export default class GalleryComponent extends React.Component
     }
 
     componentDidMount() {
+        ee.addListener('resize', this.handleWindowResize.bind(this));
+        ee.addListener('wrapper_scroll', this.handleScroll.bind(this));
+        ee.addListener('media_uploaded', this.handleMediaUploaded.bind(this));
         this.csrfToken = document.querySelector('meta[name="csrf-token"]').content;
         this.page_wrapper = React.findDOMNode(this.refs.mainContainer).parentNode;
         this.scroll = new Scroll(page_wrapper);
@@ -117,7 +119,7 @@ export default class GalleryComponent extends React.Component
             created: '[data-created] parseInt'
            }
         });
-        this.iso.on('arrangeComplete', this.handleLayoutComplete.bind(this));
+        this.iso.on('layoutComplete', this.handleLayoutComplete.bind(this));
         this.iso.arrange();
     }
 
@@ -204,6 +206,11 @@ export default class GalleryComponent extends React.Component
         this.refs.loadingBar.getDOMNode().style.display = 'none';
         this.setState({images: this.state.images.concat(data)});
         this.loadLock = false;
+    }
+
+    handleMediaUploaded(data) {
+        this.prependMedia = true;
+        this.setState({images: data.concat(this.state.images)})
     }
 
     handleScroll(e, page_wrapper) {

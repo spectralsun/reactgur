@@ -33,7 +33,10 @@ export default class UploadComponent extends React.Component
 
     onReadyStateChange(e) {
         if (e.target.readyState == 4 && e.target.status == 200) {
-            ee.emit('media_uploaded', JSON.parse(e.target.responseText))
+            if (e.target.status == 200)
+                this.props.ee.emit('uploaded', JSON.parse(e.target.responseText));
+            else
+                this.props.ee.emit('failed', JSON.parse(e.target.responseText));
         }
     }
 
