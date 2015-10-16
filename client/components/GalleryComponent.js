@@ -38,10 +38,10 @@ export default class GalleryComponent extends React.Component
             if (items[x].style.top === "")
                 new_media.push(items[x]);
         }
-        this.appendMedia && new_media.length > 0 ? this.iso.appended(new_media) : this.iso.prepended(new_media);
-        if (new_media.length == 0)
-            this.iso.layout();
-        this.appendMedia = false;
+        if (new_media.length > 0)
+            this.prependMedia ? this.iso.prepended(new_media) : this.iso.appended(new_media);
+        this.iso.arrange();
+        this.prependMedia = false;
     }
 
     calculateExpandedPosition() {
@@ -77,15 +77,15 @@ export default class GalleryComponent extends React.Component
         var total_height = height + 18;
         var margin_lr = 0;
         var margin_tb = 0;
-        if (width < 380 && height < 380) 
+        if (width < 380 && height < 380)
             margin_tb = ((380 - height) / 2); 
-        else 
+        else
             margin_tb = Math.floor((((Math.ceil(total_height / 198) * 198) - total_height) / 2));
         
-        if (item.dataset.width >= 380) 
+        if (item.dataset.width >= 380)
             margin_lr = Math.floor((((Math.ceil(total_width / 198) * 198) - total_width) / 2));
         
-        if (width == this.max_width) 
+        if ((width + (margin_lr * 2)) >= this.max_width)
             margin_tb = 4;
         this.setExpandedSize(margin_tb, margin_lr, height, width)
         // Save for preparing expanded item position
@@ -110,10 +110,15 @@ export default class GalleryComponent extends React.Component
         if (this.iso || !this.refs.isoContainer)
             return;
         this.iso = new Isotope(this.refs.isoContainer.getDOMNode(), {
-           layoutMode: 'packery'
+           layoutMode: 'packery',
+           sortBy:'created',
+           sortAscending: false,
+           getSortData: {
+            created: '[data-created] parseInt'
+           }
         });
-        this.iso.on('layoutComplete', this.handleLayoutComplete.bind(this));
-        this.iso.layout(); 
+        this.iso.on('arrangeComplete', this.handleLayoutComplete.bind(this));
+        this.iso.arrange();
     }
 
     closeExpanded() {
@@ -140,8 +145,8 @@ export default class GalleryComponent extends React.Component
         }
         this.expanded.item.className = 'media-item well expanded';
         this.expanded.img.src = this.expanded.item.dataset.href;
-        this.calculateExpandedSize(); 
-        this.calculateExpandedPosition(); 
+        this.calculateExpandedSize();
+        this.calculateExpandedPosition();
         this.iso.arrange();
     }
 
@@ -165,8 +170,8 @@ export default class GalleryComponent extends React.Component
                 item = node;
             node = node.parentNode;
         }
-        if (bottom_overlay && item.className.indexOf('expanded') !== -1) 
-            return; 
+        if (bottom_overlay && item.className.indexOf('expanded') !== -1)
+            return;
         this.expand(item);
     }
 
@@ -204,7 +209,7 @@ export default class GalleryComponent extends React.Component
     handleScroll(e, page_wrapper) {
         var container = this.refs.isoContainer.getDOMNode();
         var height = container.getBoundingClientRect().height + 61;
-        if (this.scroll.position() <= height - window.innerHeight) {
+        if (this.scroll.position() >= height - window.innerHeight) {
             this.fetchMedia();
         }
     }
@@ -262,7 +267,8 @@ export default class GalleryComponent extends React.Component
                      onScroll={this.handleScroll.bind(this)}>
                     {this.state.images.map((image) => {
                         return (
-                            <MediaComponent image={image}
+                            <MediaComponent key={image.href}
+                                            image={image}
                                             onClick={this.handleItemClick.bind(this)}
                                             onDelete={this.handleItemDelete.bind(this)}
                                             onImageLoad={this.handleImageLoad.bind(this)} 
