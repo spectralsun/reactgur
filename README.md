@@ -1,4 +1,4 @@
-# A simple image hosting app
+# Reactgur
 
 A simple reactjs/flask app for uploading images.
 
