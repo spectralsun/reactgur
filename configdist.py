@@ -13,7 +13,7 @@ IMAGE_ACCEPT_MIMES = ['image/jpeg',
                       'image/png', 
                       'image/gif', 
                       'image/x-ms-bmp']
-THUMBNAIL_SIZE = (90, 90)                      
+THUMBNAIL_SIZE = (180, 180)                      
 UPLOAD_PATH = 'static/uploads/'
 UPLOAD_REQUIRES_LOGIN = True
 USER_MUST_BE_ENABLED = False
