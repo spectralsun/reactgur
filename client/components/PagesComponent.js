@@ -55,7 +55,7 @@ export default class PagesComponent extends React.Component
                                    onDismiss={this.handleAlertDismiss.bind(this)}>{alert.msg}</Alert>)
                 })}
                 </div>
-                <div id="page" className="container">
+                <div id="page">
                      <HomePage user={this.props.user} ref="homePage" />
                 </div>
             </div>
