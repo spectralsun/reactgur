@@ -15,7 +15,7 @@ IMAGE_ACCEPT_MIMES = ['image/jpeg',
                       'image/x-ms-bmp']
 THUMBNAIL_SIZE = (180, 180)                      
 UPLOAD_PATH = 'static/uploads/'
-UPLOAD_REQUIRES_LOGIN = True
+UPLOAD_REQUIRES_LOGIN = False
 USER_MUST_BE_ENABLED = False
 USER_MUST_BE_VERIFIED = False
 
